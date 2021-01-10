@@ -4,7 +4,7 @@
 # Build container containing our pre-pulled libraries.
 # As this changes rarely it means we can use the cache between
 # building each microservice.
-FROM golang:alpine as build
+FROM docker.ceres.area51.dev/mirror/library/golang:alpine as build
 
 # The golang alpine image is missing git so ensure we have additional tools
 RUN apk add --no-cache \
@@ -17,4 +17,15 @@ ENV GOOS=linux
 
 WORKDIR /work
 ADD . .
-RUN go build .
+
+FROM build AS test
+
+RUN CGO_ENABLED=0 go test -v \
+        . \
+        ./util
+
+FROM build AS compiler
+RUN CGO_ENABLED=0 \
+    go build \
+        -o test \
+        .
