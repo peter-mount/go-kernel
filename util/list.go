@@ -15,4 +15,6 @@ type List interface {
 	IndexOf(interface{}) int
 	// Remove removes the supplied entry
 	Remove(interface{}) bool
+	// FindIndexOf returns the index of the first occurrence that matches the provided predicate
+	FindIndexOf(Predicate) int
 }

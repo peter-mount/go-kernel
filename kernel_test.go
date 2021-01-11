@@ -6,6 +6,7 @@ type testService struct {
 	start bool
 	run   bool
 	stop  bool
+	seq   int
 }
 
 func (s *testService) Name() string {
@@ -87,8 +88,15 @@ func TestKernel_Launch(t *testing.T) {
 func TestKernel_LaunchOrder(t *testing.T) {
 	s := &testService2{t: t}
 
-	err := Launch(s)
+	err := Launch(
+		&testService{seq: 1}, // seq1 so we know if we pick up this instance or a new one
+		s,
+	)
 	if err != nil {
 		t.Errorf("Launch failed: %v", err)
+	}
+
+	if s.dependency.seq != 1 {
+		s.t.Errorf("service 1 was not original one deployed")
 	}
 }

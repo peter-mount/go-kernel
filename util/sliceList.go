@@ -1,6 +1,8 @@
 package util
 
-import "errors"
+import (
+	"errors"
+)
 
 type sliceList struct {
 	data []interface{}
@@ -83,6 +85,15 @@ func (s *sliceList) Get(i int) interface{} {
 func (s *sliceList) IndexOf(v interface{}) int {
 	for i, e := range s.data {
 		if e == v {
+			return i
+		}
+	}
+	return -1
+}
+
+func (s *sliceList) FindIndexOf(f Predicate) int {
+	for i, e := range s.data {
+		if f(e) {
 			return i
 		}
 	}

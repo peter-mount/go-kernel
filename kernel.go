@@ -148,7 +148,9 @@ func (k *Kernel) AddService(s Service) (Service, error) {
 	}
 
 	// Check we don't already have it
-	if i := k.services.IndexOf(name); i > -1 {
+	if i := k.services.FindIndexOf(func(e interface{}) bool {
+		return (e).(Service).Name() == name
+	}); i > -1 {
 		return (k.services.Get(i)).(Service), nil
 	}
 
