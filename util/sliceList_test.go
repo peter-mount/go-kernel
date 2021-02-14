@@ -21,3 +21,33 @@ func TestSlice_IsEmpty(t *testing.T) {
 		t.Errorf("List size incorrect")
 	}
 }
+
+func TestSlice_Remove(t *testing.T) {
+	list := NewList()
+
+	v1 := 1
+	v2 := 2
+	v3 := 3
+
+	list.Add(v1)
+	list.Add(v2)
+	list.Add(v3)
+
+	if list.Size() != 3 {
+		t.Errorf("List not correct size, expected 3 got %d", list.Size())
+	}
+
+	list.Remove(v2)
+
+	if list.Size() != 2 {
+		t.Errorf("List not correct size, expected 2 got %d", list.Size())
+	}
+
+	if list.Get(0) != v1 {
+		t.Errorf("Element 0 returned %v not %v", list.Get(0), v1)
+	}
+
+	if list.Get(1) != v3 {
+		t.Errorf("Element 1 returned %v not %v", list.Get(1), v3)
+	}
+}

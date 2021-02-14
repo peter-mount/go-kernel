@@ -103,21 +103,30 @@ func (s *sliceList) FindIndexOf(f Predicate) int {
 func (s *sliceList) Remove(v interface{}) bool {
 	for i, e := range s.data {
 		if e == v {
-			if i == 0 {
-				if len(s.data) == 1 {
-					s.data = nil
-				} else {
-					s.data = s.data[1:]
-				}
-			} else if i == (len(s.data) - 1) {
-				s.data = s.data[:i]
-			} else {
-				s.data = append(s.data[:i-1], s.data[i+1:]...)
-			}
-			return true
+			return s.RemoveIndex(i)
 		}
 	}
 	return false
+}
+
+func (s *sliceList) RemoveIndex(i int) bool {
+	if i < 0 || i >= len(s.data) {
+		return false
+	}
+
+	if i == 0 {
+		if len(s.data) == 1 {
+			s.data = nil
+		} else {
+			s.data = s.data[1:]
+		}
+	} else if i == (len(s.data) - 1) {
+		s.data = s.data[:i]
+	} else {
+		s.data = append(s.data[:i], s.data[i+1:]...)
+	}
+
+	return true
 }
 
 func copySlice(s []interface{}) []interface{} {
