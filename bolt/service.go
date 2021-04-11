@@ -5,8 +5,8 @@ package bolt
 import (
 	"flag"
 	"fmt"
-	bbolt "github.com/etcd-io/bbolt"
-	"github.com/peter-mount/golib/kernel"
+	"github.com/etcd-io/bbolt"
+	"github.com/peter-mount/go-kernel"
 	"os"
 	"time"
 )

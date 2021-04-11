@@ -3,7 +3,7 @@ package logger
 import (
 	"flag"
 	"fmt"
-	"github.com/peter-mount/golib/kernel"
+	"github.com/peter-mount/go-kernel"
 	"log"
 	"net/url"
 	"os"

@@ -5,7 +5,7 @@
 package cron
 
 import (
-	"github.com/peter-mount/golib/kernel"
+	"github.com/peter-mount/go-kernel"
 	crn "gopkg.in/robfig/cron.v2"
 )
 

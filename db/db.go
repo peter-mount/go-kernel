@@ -5,7 +5,7 @@ import (
 	"flag"
 	"fmt"
 	_ "github.com/lib/pq"
-	"github.com/peter-mount/golib/kernel"
+	"github.com/peter-mount/go-kernel"
 	"os"
 	"time"
 )

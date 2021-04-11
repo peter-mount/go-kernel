@@ -11,7 +11,7 @@ import (
 	"fmt"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
-	"github.com/peter-mount/golib/kernel"
+	"github.com/peter-mount/go-kernel"
 	"golang.org/x/net/http2"
 	"golang.org/x/net/http2/h2c"
 	"log"
