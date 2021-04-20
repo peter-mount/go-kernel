@@ -2,13 +2,13 @@ package util
 
 import "sync"
 
-// syncSet is a synchronized map with accessors similar to the Java Map interface
+// syncSet is a synchronized set with accessors similar to the Java Set interface
 type syncSet struct {
 	mutex sync.Mutex
 	m     map[interface{}]interface{}
 }
 
-// NewsyncSet creates a new Synchronous Map
+// NewSyncSet creates a new Synchronous Set
 func NewSyncSet() Set {
 	s := &syncSet{}
 	s.Clear()
