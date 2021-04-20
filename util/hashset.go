@@ -28,6 +28,14 @@ func (m *hashSet) Add(v interface{}) bool {
 	return !e
 }
 
+func (m *hashSet) AddAll(v ...interface{}) bool {
+	var r bool
+	for _, e := range v {
+		r = m.Add(e) || r
+	}
+	return r
+}
+
 func (m *hashSet) Clear() {
 	m.m = make(map[interface{}]interface{})
 }

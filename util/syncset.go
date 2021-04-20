@@ -35,6 +35,14 @@ func (m *syncSet) Add(v interface{}) bool {
 	return !e
 }
 
+func (m *syncSet) AddAll(v ...interface{}) bool {
+	var r bool
+	for _, e := range v {
+		r = m.Add(e) || r
+	}
+	return r
+}
+
 func (m *syncSet) Clear() {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()

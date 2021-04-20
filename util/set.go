@@ -6,6 +6,8 @@ type Set interface {
 	Iterable
 	// Add adds an entry to the set
 	Add(interface{}) bool
+	// AddAll adds all supplied values to the set
+	AddAll(v ...interface{}) bool
 	// Contains returns true if the set contains the value
 	Contains(interface{}) bool
 	// Remove removes the supplied entry
