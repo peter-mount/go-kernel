@@ -1,4 +1,4 @@
-// A basic REST server supporting HTTP.
+// Package rest A basic REST server supporting HTTP.
 //
 // This package implements a HTTP server using net/http and github.com/gorilla/mux
 // taking away most of the required boiler plate code usually needed when implementing
