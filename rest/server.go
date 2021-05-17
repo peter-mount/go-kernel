@@ -22,25 +22,18 @@ import (
 
 // The internal config of a Server
 type Server struct {
-	// The permitted headers
-	Headers []string
-	// The permitted Origins
-	Origins []string
-	// The permitted methods
-	Methods []string
-	// Port to listen to
-	Port int
-	port *int
-	// The mux Router
-	router *mux.Router
-	// Base Context
-	ctx *ServerContext
-	// server type
-	protocol *string
-	certFile *string
-	keyFile  *string
-	// Logging
-	logConsole *bool
+	Headers       []string       // The permitted headers
+	Origins       []string       // The permitted Origins
+	Methods       []string       // The permitted methods
+	Port          int            // Port to listen to
+	port          *int           // Port from command line
+	router        *mux.Router    // The mux Router
+	ctx           *ServerContext // Base Context
+	protocol      *string        // server type
+	certFile      *string        // ssl cert
+	keyFile       *string        // ssl key
+	logConsole    *bool          // Logging
+	disableServer *bool          // Flag to disable server on command line
 }
 
 func (a *Server) Name() string {
@@ -53,6 +46,7 @@ func (a *Server) Init(k *kernel.Kernel) error {
 	a.port = flag.Int("rest-port", 0, "Port to use for http")
 	a.certFile = flag.String("rest-cert", "", "TLS Certificate File")
 	a.keyFile = flag.String("rest-key", "", "TLS Key File")
+	a.disableServer = flag.Bool("rest-disable", false, "Disable the rest server, use for tools that run the service")
 	return nil
 }
 
@@ -100,6 +94,11 @@ func (s *Server) Use(handler mux.MiddlewareFunc) {
 }
 
 func (s *Server) Run() error {
+	// Disable the server if asked
+	if *s.disableServer {
+		return nil
+	}
+
 	// If not defined then use port 8080
 	port := s.Port
 	if port < 1 || port > 65534 {
