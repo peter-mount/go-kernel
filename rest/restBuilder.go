@@ -29,8 +29,8 @@ type RestBuilder struct {
 }
 
 // Begin building rest endpoints on a server
-func (a *Server) RestBuilder() *RestBuilder {
-	return &RestBuilder{server: a}
+func (s *Server) RestBuilder() *RestBuilder {
+	return &RestBuilder{server: s}
 }
 
 // Build a rest endpoint

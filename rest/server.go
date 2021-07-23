@@ -25,6 +25,8 @@ type Server struct {
 	Headers       []string       // The permitted headers
 	Origins       []string       // The permitted Origins
 	Methods       []string       // The permitted methods
+	Address       string         // Address to bind to, "" for any
+	NoFlags       bool           // true to disable command line flags
 	Port          int            // Port to listen to
 	port          *int           // Port from command line
 	router        *mux.Router    // The mux Router
@@ -36,17 +38,19 @@ type Server struct {
 	disableServer *bool          // Flag to disable server on command line
 }
 
-func (a *Server) Name() string {
+func (s *Server) Name() string {
 	return "Rest Server"
 }
 
-func (a *Server) Init(k *kernel.Kernel) error {
-	a.logConsole = flag.Bool("rest-log", false, "Log requests to console")
-	a.protocol = flag.String("rest-protocol", "http", "Protocol to use: http|https|h2|h2c")
-	a.port = flag.Int("rest-port", 0, "Port to use for http")
-	a.certFile = flag.String("rest-cert", "", "TLS Certificate File")
-	a.keyFile = flag.String("rest-key", "", "TLS Key File")
-	a.disableServer = flag.Bool("rest-disable", false, "Disable the rest server, use for tools that run the service")
+func (s *Server) Init(k *kernel.Kernel) error {
+	if !s.NoFlags {
+		s.logConsole = flag.Bool("rest-log", false, "Log requests to console")
+		s.protocol = flag.String("rest-protocol", "http", "Protocol to use: http|https|h2|h2c")
+		s.port = flag.Int("rest-port", 0, "Port to use for http")
+		s.certFile = flag.String("rest-cert", "", "TLS Certificate File")
+		s.keyFile = flag.String("rest-key", "", "TLS Key File")
+		s.disableServer = flag.Bool("rest-disable", false, "Disable the rest server, use for tools that run the service")
+	}
 	return nil
 }
 
@@ -121,7 +125,7 @@ func (s *Server) Run() error {
 	handler := handlers.CORS(originsOk, headersOk, methodsOk)(s.router)
 
 	// Now start the appropriate server
-	bindingAddress := fmt.Sprintf(":%d", port)
+	bindingAddress := fmt.Sprintf("%s:%d", s.Address, port)
 	var server *http.Server
 	serveTls := false
 	switch *s.protocol {
