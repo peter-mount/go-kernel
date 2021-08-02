@@ -4,7 +4,7 @@ go 1.12
 
 require (
 	github.com/etcd-io/bbolt v1.3.3
-	github.com/gorilla/handlers v1.4.0
+	github.com/gorilla/handlers v1.5.1
 	github.com/gorilla/mux v1.7.2
 	github.com/kr/pretty v0.1.0 // indirect
 	github.com/lib/pq v1.1.1
