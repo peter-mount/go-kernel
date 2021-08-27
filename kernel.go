@@ -90,10 +90,8 @@ func Launch(services ...Service) error {
 	}
 
 	// Add the supplied services in sequence. This creates the dependency graph
-	for _, s := range services {
-		if _, err := k.AddService(s); err != nil {
-			return err
-		}
+	if err := k.DependsOn(services...); err != nil {
+		return err
 	}
 
 	// From this point nothing else can be added to the Kernel
@@ -131,6 +129,18 @@ func Launch(services ...Service) error {
 
 	// Run services
 	return k.run()
+}
+
+// DependsOn just adds dependencies on other services, it does not return the resolved Service's.
+// This is short of _,err:=k.AddService() for each dependency.
+func (k *Kernel) DependsOn(services ...Service) error {
+	// Add the supplied services in sequence. This creates the dependency graph
+	for _, s := range services {
+		if _, err := k.AddService(s); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // AddService adds a service to the kernel
