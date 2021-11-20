@@ -35,7 +35,7 @@ func NewIterator(v ...interface{}) Iterator {
 }
 
 func (i *sliceIterator) HasNext() bool {
-	return i.pos <= len(i.slice)
+	return i.pos < len(i.slice)
 }
 
 func (i *sliceIterator) Next() interface{} {
