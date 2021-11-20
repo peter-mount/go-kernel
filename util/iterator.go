@@ -40,8 +40,9 @@ func (i *sliceIterator) HasNext() bool {
 
 func (i *sliceIterator) Next() interface{} {
 	if i.HasNext() {
+		v := i.slice[i.pos]
 		i.pos++
-		return i.slice[i.pos]
+		return v
 	}
 	panic(errors.New("iterator out of bounds"))
 }
