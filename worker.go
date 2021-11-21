@@ -13,6 +13,11 @@ func (w *Worker) Name() string {
 	return "worker"
 }
 
+func (w *Worker) Start() error {
+	w.tasks = task.NewQueue()
+	return nil
+}
+
 // AddTask adds a task with priority 0
 func (w *Worker) AddTask(task task.Task) task.Queue {
 	return w.tasks.AddTask(task)
