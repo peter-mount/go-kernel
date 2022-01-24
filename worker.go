@@ -9,10 +9,6 @@ type Worker struct {
 	tasks task.Queue
 }
 
-func (w *Worker) Name() string {
-	return "worker"
-}
-
 func (w *Worker) Start() error {
 	w.tasks = task.NewQueue()
 	return nil

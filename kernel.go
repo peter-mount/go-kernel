@@ -165,8 +165,6 @@ func (k *Kernel) AddService(s Service) (Service, error) {
 		name = t.PkgPath() + "|" + t.Name()
 	}
 
-	log.Printf("addservice %q", name)
-
 	// Prevent circular dependencies
 	if k.dependencies.Contains(name) {
 		//if _, exists := k.dependencies[s.Name()]; exists {

@@ -32,10 +32,6 @@ type MemUsage struct {
 	start time.Time
 }
 
-func (m *MemUsage) Name() string {
-	return "MemUsage"
-}
-
 // Starts the service.
 // The process duration time reported is from when this is called.
 func (m *MemUsage) Start() error {

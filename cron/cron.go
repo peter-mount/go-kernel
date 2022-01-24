@@ -1,4 +1,4 @@
-// This provides the Kernel a managed Cron service.
+// Package cron This provides the Kernel a managed Cron service.
 //
 // This is simply a wrapper around gopkg.in/robfig/cron.v2
 //
@@ -9,16 +9,12 @@ import (
 	crn "gopkg.in/robfig/cron.v2"
 )
 
-// gopkg.in/robfig/crn.v2 as a Kernel Service
+// CronService gopkg.in/robfig/crn.v2 as a Kernel Service
 type CronService struct {
 	cron *crn.Cron
 }
 
-func (s *CronService) Name() string {
-	return "kernel.CronService"
-}
-
-func (s *CronService) Init(k *kernel.Kernel) error {
+func (s *CronService) Init(_ *kernel.Kernel) error {
 	s.cron = crn.New()
 	return nil
 }

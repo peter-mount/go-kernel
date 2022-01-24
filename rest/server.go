@@ -20,7 +20,7 @@ import (
 	"strconv"
 )
 
-// The internal config of a Server
+// Server The internal config of a Server
 type Server struct {
 	Headers       []string       // The permitted headers
 	Origins       []string       // The permitted Origins
@@ -38,11 +38,7 @@ type Server struct {
 	disableServer *bool          // Flag to disable server on command line
 }
 
-func (s *Server) Name() string {
-	return "Rest Server"
-}
-
-func (s *Server) Init(k *kernel.Kernel) error {
+func (s *Server) Init(_ *kernel.Kernel) error {
 	if !s.NoFlags {
 		s.logConsole = flag.Bool("rest-log", false, "Log requests to console")
 		s.protocol = flag.String("rest-protocol", "http", "Protocol to use: http|https|h2|h2c")

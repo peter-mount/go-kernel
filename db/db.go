@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-// database/sql bound with github.com/lib/pq as a Kernel Service
+// DBService database/sql bound with github.com/lib/pq as a Kernel Service
 type DBService struct {
 	postgresURI *string
 	db          *sql.DB
@@ -21,11 +21,7 @@ type DBService struct {
 	Debug bool
 }
 
-func (s *DBService) Name() string {
-	return "kernel.DBService"
-}
-
-func (s *DBService) Init(k *kernel.Kernel) error {
+func (s *DBService) Init(_ *kernel.Kernel) error {
 	s.postgresURI = flag.String("db", "", "The database to connect to")
 	return nil
 }
