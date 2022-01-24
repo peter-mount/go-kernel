@@ -2,7 +2,6 @@ package kernel
 
 import (
 	"fmt"
-	"log"
 	"reflect"
 	"strings"
 	"unsafe"
@@ -35,42 +34,45 @@ func (k *Kernel) inject(v interface{}) error {
 	return nil
 }
 
-type kernelInjector func(f int, sf reflect.StructField, tv reflect.Value) error
+type kernelInjector func(tags []string, f int, sf reflect.StructField, tv reflect.Value) error
 
 // injectField handles the injection of a specific field
 func (k *Kernel) injectField(tag string, f int, sf reflect.StructField, tv reflect.Value) error {
 	// Run through each param in the tag
-	for _, tagTerm := range strings.Split(tag, ",") {
-		var injector kernelInjector
-		switch tagTerm {
-		case "-":
-			// Do nothing. Think how json/xml uses this. If it's the first entry then this ignores this field
-			return nil
+	tags := strings.Split(tag, ",")
+	var injector kernelInjector
+	switch tags[0] {
+	case "-":
+		// Do nothing. Think how json/xml uses this. If it's the first entry then this ignores this field
+		return nil
 
-		case "inject":
-			// inject a dependency
-			injector = k.injectService
+	case "inject":
+		// inject a dependency
+		injector = k.injectService
 
-		case "worker":
-			// Inject the default task.Queue(f, sf, tv)
-			injector = k.injectWorker
+	case "worker":
+		// Inject the default task.Queue(f, sf, tv)
+		injector = k.injectWorker
 
-		default:
-			// Fail with an unsupported tag value
-			return fmt.Errorf("unsupported kernel tag %q", tagTerm)
-		}
+	case "flag":
+		injector = k.injectFlag
 
-		if injector != nil {
-			if err := injector(f, sf, tv); err != nil {
-				return err
-			}
+	default:
+		// Fail with an unsupported tag value
+		return fmt.Errorf("unsupported kernel tag %q", tags[0])
+	}
+
+	if injector != nil {
+		if err := injector(tags[1:], f, sf, tv); err != nil {
+			return err
 		}
 	}
+
 	return nil
 }
 
 // injectService injects a dependency into the service structure
-func (k *Kernel) injectService(f int, sf reflect.StructField, tv reflect.Value) error {
+func (k *Kernel) injectService(_ []string, f int, sf reflect.StructField, tv reflect.Value) error {
 
 	if sf.Type.Kind() != reflect.Ptr {
 		return fmt.Errorf("injection failed \"%s %s\" not a pointer to a Service", sf.Name, sf.Type)
@@ -106,8 +108,7 @@ func setVal(f int, sf reflect.StructField, tv reflect.Value, val interface{}) {
 	tf.Set(vv.Convert(sf.Type))
 }
 
-func (k *Kernel) injectWorker(f int, sf reflect.StructField, tv reflect.Value) error {
-	log.Print(sf.Type, sf.Type.Kind())
+func (k *Kernel) injectWorker(_ []string, f int, sf reflect.StructField, tv reflect.Value) error {
 	resolvedService, err := k.AddService(&Worker{})
 	if err != nil {
 		return err
