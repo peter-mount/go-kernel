@@ -21,12 +21,7 @@ ADD . .
 
 FROM build AS test
 
-RUN CGO_ENABLED=0 go test -v \
-        . \
-        ./util
+RUN CGO_ENABLED=0 go test -v . ./util ./test
 
-FROM build AS compiler
-RUN CGO_ENABLED=0 \
-    go build \
-        -o test \
-        .
+#FROM build AS compiler
+#RUN CGO_ENABLED=0 go build -o test .

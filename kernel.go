@@ -1,4 +1,4 @@
-// Kernel is a simple microkernel that allows for Service's to be deployed within
+// Package kernel is a simple microkernel that allows for Service's to be deployed within
 // an application.
 //
 // It manages the complete lifecycle of the application with muliple stages each
@@ -36,31 +36,31 @@ type Service interface {
 	Name() string
 }
 
-// A Service that expects to be called in the Init lifecycle phase
+// InitialisableService a Service that expects to be called in the Init lifecycle phase
 type InitialisableService interface {
 	// Init initialises a Service when it's added to the Kernel
 	Init(*Kernel) error
 }
 
-// A Service that expects to be called in the PostInit lifecycle phase
+// PostInitialisableService a Service that expects to be called in the PostInit lifecycle phase
 type PostInitialisableService interface {
-	// Init initialises a Service when it's added to the Kernel
+	// PostInit initialises a Service when it's added to the Kernel
 	PostInit() error
 }
 
-// A Service that expects to be called in the Start lifecycle phase
+// StartableService a Service that expects to be called in the Start lifecycle phase
 type StartableService interface {
 	// Start called when the Kernel starts but before services Run
 	Start() error
 }
 
-// A Service that expects to be called when the kernel shutsdown if it's in the
+// StoppableService a Service that expects to be called when the kernel shutsdown if it's in the
 // Start or Run lifecycle phases
 type StoppableService interface {
 	Stop()
 }
 
-// A Service that is expected to run in the Run lifecycle phase
+// RunnableService a Service that is expected to run in the Run lifecycle phase
 type RunnableService interface {
 	// Run executes the service
 	Run() error
@@ -68,15 +68,10 @@ type RunnableService interface {
 
 // Kernel is the core container for deployed services
 type Kernel struct {
-	// The deployed services
-	//services []Service
-	services util.List
-	// The services that are running & need to be shut down
-	stopList util.List
-	// Used to prevent circular dependencies
-	dependencies util.Set
-	// mark the kernel as read only
-	readOnly bool
+	services     util.List // The deployed services
+	stopList     util.List // The services that are running & need to be shut down
+	dependencies util.Set  // Used to prevent circular dependencies
+	readOnly     bool      // mark the kernel as read only
 }
 
 // Launch is a convenience method to launch a single service.
@@ -169,6 +164,11 @@ func (k *Kernel) AddService(s Service) (Service, error) {
 	k.dependencies.Add(name)
 	defer k.dependencies.Remove(name)
 
+	// inject dependencies using struct field tags
+	if err := k.inject(s); err != nil {
+		return nil, err
+	}
+
 	// Init the service, it can add dependencies here
 	if is, ok := s.(InitialisableService); ok {
 		if err := is.Init(k); err != nil {
@@ -176,7 +176,7 @@ func (k *Kernel) AddService(s Service) (Service, error) {
 		}
 	}
 
-	// Finally add the service to the end of the startup list
+	// Finally, add the service to the end of the startup list
 	k.services.Add(s)
 
 	return s, nil
