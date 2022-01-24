@@ -31,8 +31,8 @@ func (t *testDeployService2) Calc() int {
 	return 7
 }
 
-// TestService_Inject tests the kenel injection mechanism.
-// This is in a separate package as we do not want the Kernal to have direct access
+// TestService_Inject tests the kernel injection mechanism.
+// This is in a separate package as we do not want the Kernel to have direct access
 // to unexported fields within these two test services
 func TestService_Inject(t *testing.T) {
 

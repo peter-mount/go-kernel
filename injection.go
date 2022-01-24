@@ -2,6 +2,7 @@ package kernel
 
 import (
 	"fmt"
+	"log"
 	"reflect"
 	"strings"
 	"unsafe"
@@ -34,10 +35,13 @@ func (k *Kernel) inject(v interface{}) error {
 	return nil
 }
 
+type kernelInjector func(f int, sf reflect.StructField, tv reflect.Value) error
+
 // injectField handles the injection of a specific field
 func (k *Kernel) injectField(tag string, f int, sf reflect.StructField, tv reflect.Value) error {
 	// Run through each param in the tag
 	for _, tagTerm := range strings.Split(tag, ",") {
+		var injector kernelInjector
 		switch tagTerm {
 		case "-":
 			// Do nothing. Think how json/xml uses this. If it's the first entry then this ignores this field
@@ -45,13 +49,21 @@ func (k *Kernel) injectField(tag string, f int, sf reflect.StructField, tv refle
 
 		case "inject":
 			// inject a dependency
-			if err := k.injectService(f, sf, tv); err != nil {
-				return err
-			}
+			injector = k.injectService
+
+		case "worker":
+			// Inject the default task.Queue(f, sf, tv)
+			injector = k.injectWorker
 
 		default:
 			// Fail with an unsupported tag value
 			return fmt.Errorf("unsupported kernel tag %q", tagTerm)
+		}
+
+		if injector != nil {
+			if err := injector(f, sf, tv); err != nil {
+				return err
+			}
 		}
 	}
 	return nil
@@ -72,20 +84,34 @@ func (k *Kernel) injectService(f int, sf reflect.StructField, tv reflect.Value) 
 			return err
 		}
 
-		// Get the Value for the field in the service struct
-		tf := tv.Elem().Field(f)
-
-		// Some magic, this provides us write access the field even if it's unexported.
-		// Without this tf.Set() will fail if the field is unexported
-		// see: https://stackoverflow.com/a/43918797/6734016
-		tf = reflect.NewAt(tf.Type(), unsafe.Pointer(tf.UnsafeAddr())).Elem()
-
-		// Convert our resolved service into a Value then convert to the field's type
-		vv := reflect.ValueOf(resolvedService)
-		tf.Set(vv.Convert(sf.Type))
+		setVal(f, sf, tv, resolvedService)
 	} else {
 		return fmt.Errorf("injection failed \"%s %s\" not a Service", sf.Name, sf.Type)
 	}
 
+	return nil
+}
+
+func setVal(f int, sf reflect.StructField, tv reflect.Value, val interface{}) {
+	// Get the Value for the field in the service struct
+	tf := tv.Elem().Field(f)
+
+	// Some magic, this provides us write access the field even if it's unexported.
+	// Without this tf.Set() will fail if the field is unexported
+	// see: https://stackoverflow.com/a/43918797/6734016
+	tf = reflect.NewAt(tf.Type(), unsafe.Pointer(tf.UnsafeAddr())).Elem()
+
+	// Convert our resolved service into a Value then convert to the field's type
+	vv := reflect.ValueOf(val)
+	tf.Set(vv.Convert(sf.Type))
+}
+
+func (k *Kernel) injectWorker(f int, sf reflect.StructField, tv reflect.Value) error {
+	log.Print(sf.Type, sf.Type.Kind())
+	resolvedService, err := k.AddService(&Worker{})
+	if err != nil {
+		return err
+	}
+	setVal(f, sf, tv, resolvedService)
 	return nil
 }
