@@ -21,17 +21,24 @@
 package kernel
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 	"github.com/peter-mount/go-kernel/util"
 	"log"
 	"os"
 	"os/signal"
+	"reflect"
 	"syscall"
 )
 
 // Service to be deployed within the Kernel
 type Service interface {
+}
+
+// NamedService is the original Service where the Name() function returns the unique name.
+// This is now optional, a service does not require Name() anymore.
+type NamedService interface {
 	// Name returns the unique name of this service
 	Name() string
 }
@@ -68,10 +75,11 @@ type RunnableService interface {
 
 // Kernel is the core container for deployed services
 type Kernel struct {
-	services     util.List // The deployed services
-	stopList     util.List // The services that are running & need to be shut down
-	dependencies util.Set  // Used to prevent circular dependencies
-	readOnly     bool      // mark the kernel as read only
+	services     util.List          // The deployed services
+	stopList     util.List          // The services that are running & need to be shut down
+	dependencies util.Set           // Used to prevent circular dependencies
+	index        map[string]Service // Map of services by name
+	readOnly     bool               // mark the kernel as read only
 }
 
 // Launch is a convenience method to launch a single service.
@@ -82,6 +90,7 @@ func Launch(services ...Service) error {
 		dependencies: util.NewSyncSet(),
 		services:     util.NewList(),
 		stopList:     util.NewList(),
+		index:        make(map[string]Service),
 	}
 
 	// Add the supplied services in sequence. This creates the dependency graph
@@ -141,10 +150,22 @@ func (k *Kernel) DependsOn(services ...Service) error {
 // AddService adds a service to the kernel
 func (k *Kernel) AddService(s Service) (Service, error) {
 	if k.readOnly {
-		return nil, fmt.Errorf("Cannot add %s as Kernel is read only", s.Name())
+		return nil, errors.New("Cannot add as Kernel is read only")
 	}
 
-	name := s.Name()
+	// Generate the service name either via NamedService or reflection
+	var name string
+	if ns, ok := s.(NamedService); ok {
+		name = ns.Name()
+	} else {
+		t := reflect.ValueOf(s).Elem().Type()
+		if t.Kind() != reflect.Struct {
+			return nil, errors.New("Cannot deploy non-service")
+		}
+		name = t.PkgPath() + "|" + t.Name()
+	}
+
+	log.Printf("addservice %q", name)
 
 	// Prevent circular dependencies
 	if k.dependencies.Contains(name) {
@@ -153,10 +174,8 @@ func (k *Kernel) AddService(s Service) (Service, error) {
 	}
 
 	// Check we don't already have it
-	if i := k.services.FindIndexOf(func(e interface{}) bool {
-		return (e).(Service).Name() == name
-	}); i > -1 {
-		return (k.services.Get(i)).(Service), nil
+	if service, exists := k.index[name]; exists {
+		return service, nil
 	}
 
 	// This will prevent circular dependencies by using this map
@@ -178,6 +197,7 @@ func (k *Kernel) AddService(s Service) (Service, error) {
 
 	// Finally, add the service to the end of the startup list
 	k.services.Add(s)
+	k.index[name] = s
 
 	return s, nil
 }

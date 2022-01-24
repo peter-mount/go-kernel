@@ -71,15 +71,12 @@ type testDeployNonService3 struct {
 // to unexported fields within these two test services
 func TestService_InjectNonService(t *testing.T) {
 
+	// Note originally this would fail but now any struct is deployable
 	s := &testDeployService3{}
 
 	err := kernel.Launch(s)
-	if err == nil {
-		t.Fatal("No error returned")
-	}
-
-	if err.Error() != "injection failed \"service2 *test.testDeployNonService3\" not a Service" {
-		t.Fatal("Unexpected error returned: " + err.Error())
+	if err != nil {
+		t.Fatal(err)
 	}
 }
 
@@ -103,7 +100,7 @@ func TestService_InjectNonStruct(t *testing.T) {
 	if err == nil {
 		t.Fatal("No error returned")
 	}
-	if err.Error() != "injection failed \"service2 *string\" not a Service" {
+	if err.Error() != "Cannot deploy non-service" {
 		t.Fatal("Unexpected error returned: " + err.Error())
 	}
 }
