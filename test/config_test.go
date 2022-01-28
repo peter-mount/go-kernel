@@ -18,23 +18,6 @@ type configService2 struct {
 	conf *config1       `kernel:"config,test1"`
 }
 
-func TestConfig(t *testing.T) {
-	to := &configService{}
-
-	err := kernel.Launch(to)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	if to.conf == nil {
-		t.Fatal("No config injected")
-	}
-
-	if to.conf.Name != "test" {
-		t.Errorf("Name not read, got %q expected \"test\"", to.conf.Name)
-	}
-}
-
 func TestConfig_Multi(t *testing.T) {
 	cs2 := &configService2{}
 

@@ -41,8 +41,8 @@ type kernelInjector func(tags []string, ip *injection.Point) error
 
 // injectField handles the injection of a specific field
 func (k *Kernel) injectField(tag string, ip *injection.Point) error {
-	// Run through each param in the tag
 	tags := strings.Split(tag, ",")
+
 	var injector kernelInjector
 	switch tags[0] {
 	case "-":
