@@ -6,16 +6,22 @@ package cron
 
 import (
 	"github.com/peter-mount/go-kernel"
+	"github.com/peter-mount/go-kernel/util/task"
 	crn "gopkg.in/robfig/cron.v2"
 )
 
 // CronService gopkg.in/robfig/crn.v2 as a Kernel Service
 type CronService struct {
-	cron *crn.Cron
+	daemon *kernel.Daemon `kernel:"inject"`
+	worker task.Queue     `kernel:"worker"`
+	cron   *crn.Cron
 }
 
-func (s *CronService) Init(_ *kernel.Kernel) error {
+func (s *CronService) PostInit() error {
 	s.cron = crn.New()
+
+	// Mark ourselves as a daemon
+	s.daemon.SetDaemon()
 	return nil
 }
 
@@ -36,6 +42,18 @@ func (s *CronService) AddFunc(spec string, cmd func()) (crn.EntryID, error) {
 func (s *CronService) AddJob(spec string, cmd crn.Job) (crn.EntryID, error) {
 	id, err := s.cron.AddJob(spec, cmd)
 	return id, err
+}
+
+func (s *CronService) AddTask(spec string, task task.Task) (crn.EntryID, error) {
+	return s.AddFunc(spec, func() {
+		s.worker.AddTask(task)
+	})
+}
+
+func (s *CronService) AddPriorityTask(priority int, spec string, task task.Task) (crn.EntryID, error) {
+	return s.AddFunc(spec, func() {
+		s.worker.AddPriorityTask(priority, task)
+	})
 }
 
 func (s *CronService) Entries() []crn.Entry {

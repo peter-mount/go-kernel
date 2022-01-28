@@ -48,7 +48,9 @@ func GetQueue(ctx context.Context) Queue {
 func Run(queue Queue, ctx context.Context) error {
 	if q, ok := queue.(*defaultQueue); ok {
 		// Ensure we have a reference to the Queue in the context
-		ctx = context.WithValue(ctx, ctxKey, queue)
+		if ctx.Value(ctxKey) == nil {
+			ctx = context.WithValue(ctx, ctxKey, queue)
+		}
 
 		// Run each task in sequence until either an error or the queue is empty
 		return q.tasks.Drain(func(i interface{}) error {
