@@ -9,14 +9,14 @@ import (
 	"strings"
 )
 
-// DynamicConfig is an extensible yaml based config file format.
+// dynamicConfig is an extensible yaml based config file format.
 //
 // Services can add their own config handlers to this instance so that
 // when it loads the configuration from a file it updates each service
 // before they start.
 //
 // In the config file, the yaml consists of objects, one per service.
-type DynamicConfig struct {
+type dynamicConfig struct {
 	filename *string                 `kernel:"flag,config,Configuration file,config.yaml"`
 	entries  map[string]*configEntry // Map of entries
 }
@@ -28,7 +28,7 @@ type configEntry struct {
 }
 
 // Add a named config entry. Returns an Error if the name is already in use
-func (dc *DynamicConfig) add(name string, ip *injection.Point) error {
+func (dc *dynamicConfig) add(name string, ip *injection.Point) error {
 	if dc.entries == nil {
 		dc.entries = make(map[string]*configEntry)
 	}
@@ -50,7 +50,7 @@ func (dc *DynamicConfig) add(name string, ip *injection.Point) error {
 	return nil
 }
 
-func (dc *DynamicConfig) Start() error {
+func (dc *dynamicConfig) Start() error {
 	f, err := os.Open(*dc.filename)
 	if err != nil {
 		return err
@@ -86,7 +86,7 @@ func (dc *DynamicConfig) Start() error {
 	return nil
 }
 
-func (dc *DynamicConfig) processLines(lines []string) error {
+func (dc *dynamicConfig) processLines(lines []string) error {
 	if len(lines) > 0 {
 		i := strings.Index(lines[0], ":")
 		if i < 0 {
@@ -124,11 +124,11 @@ func (k *Kernel) injectConfig(tags []string, ip *injection.Point) error {
 	}
 
 	// lazy init service
-	sv, err := k.AddService(&DynamicConfig{})
+	sv, err := k.AddService(&dynamicConfig{})
 	if err != nil {
 		return err
 	}
-	dc := sv.(*DynamicConfig)
+	dc := sv.(*dynamicConfig)
 
 	// Add the injection point to the section
 	return dc.add(configSectionName, ip)
