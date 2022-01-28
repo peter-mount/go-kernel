@@ -2,74 +2,68 @@ package kernel
 
 import (
 	"flag"
-	"fmt"
+	"github.com/peter-mount/go-kernel/util/injection"
 	"reflect"
 	"strconv"
 )
 
 // injectFlag - kernel:"flag:name:desc:default" - default is optional
-func (k *Kernel) injectFlag(tags []string, f int, sf reflect.StructField, tv reflect.Value) error {
-	t := sf.Type
-	if sf.Type.Kind() != reflect.Ptr {
-		return fmt.Errorf("flag %s not pointer", sf.Name)
-	}
-	t = t.Elem()
-
-	switch t.Kind() {
+func (k *Kernel) injectFlag(tags []string, ip *injection.Point) error {
+	switch ip.Type().Kind() {
 	case reflect.Bool:
-		v, err := strconv.ParseBool(getFlagDefault(tags, sf, "false"))
+		v, err := strconv.ParseBool(getFlagDefault(tags, "false"))
 		if err != nil {
-			return err
+			return ip.Error(err)
 		}
-		setVal(f, sf, tv, flag.Bool(getFlagName(tags, sf), v, getFlagDesc(tags, sf)))
+		ip.Set(flag.Bool(getFlagName(tags, ip), v, getFlagDesc(tags, ip)))
 
 	case reflect.String:
-		v := getFlagDefault(tags, sf, "")
-		setVal(f, sf, tv, flag.String(getFlagName(tags, sf), v, getFlagDesc(tags, sf)))
+		v := getFlagDefault(tags, "")
+		ip.Set(flag.String(getFlagName(tags, ip), v, getFlagDesc(tags, ip)))
 
 	case reflect.Int:
-		v, err := strconv.ParseInt(getFlagDefault(tags, sf, "0"), 10, 64)
+		v, err := strconv.ParseInt(getFlagDefault(tags, "0"), 10, 64)
 		if err != nil {
-			return err
+			return ip.Error(err)
 		}
-		setVal(f, sf, tv, flag.Int(getFlagName(tags, sf), int(v), getFlagDesc(tags, sf)))
+		ip.Set(flag.Int(getFlagName(tags, ip), int(v), getFlagDesc(tags, ip)))
 
 	case reflect.Int64:
-		v, err := strconv.ParseInt(getFlagDefault(tags, sf, "0"), 10, 64)
+		v, err := strconv.ParseInt(getFlagDefault(tags, "0"), 10, 64)
 		if err != nil {
-			return err
+			return ip.Error(err)
 		}
-		setVal(f, sf, tv, flag.Int64(getFlagName(tags, sf), v, getFlagDesc(tags, sf)))
+		ip.Set(flag.Int64(getFlagName(tags, ip), v, getFlagDesc(tags, ip)))
 
 	case reflect.Float64:
-		v, err := strconv.ParseFloat(getFlagDefault(tags, sf, "0.0"), 64)
+		v, err := strconv.ParseFloat(getFlagDefault(tags, "0.0"), 64)
 		if err != nil {
-			return err
+			return ip.Error(err)
 		}
-		setVal(f, sf, tv, flag.Float64(getFlagName(tags, sf), v, getFlagDesc(tags, sf)))
+		ip.Set(flag.Float64(getFlagName(tags, ip), v, getFlagDesc(tags, ip)))
 
 	default:
-		return fmt.Errorf("unsupported flag type %q on %q", t, sf.Name)
+		return ip.Errorf("unsupported flag type %q", ip.Type())
 	}
 
 	return nil
 }
 
-func getFlagName(tags []string, sf reflect.StructField) string {
+func getFlagName(tags []string, ip *injection.Point) string {
 	if len(tags) > 0 && tags[0] != "" {
 		return tags[0]
 	}
-	return sf.Name
+	return ip.StructField().Name
 }
 
-func getFlagDesc(tags []string, sf reflect.StructField) string {
+func getFlagDesc(tags []string, ip *injection.Point) string {
 	if len(tags) > 1 && tags[1] != "" {
 		return tags[1]
 	}
-	return getFlagName(tags, sf)
+	return getFlagName(tags, ip)
 }
 
-func getFlagDefault(tags []string, _ reflect.StructField, d string) string {
+func getFlagDefault(tags []string, d string) string {
 	if len(tags) > 2 && tags[2] != "" {
 		return tags[2]
 	}

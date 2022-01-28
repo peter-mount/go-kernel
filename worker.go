@@ -3,14 +3,21 @@ package kernel
 import (
 	"context"
 	"github.com/peter-mount/go-kernel/util/task"
+	"log"
+	"time"
 )
 
 type Worker struct {
-	tasks task.Queue
+	daemon *Daemon `kernel:"inject"`
+	tasks  task.Queue
 }
 
 func (w *Worker) Start() error {
 	w.tasks = task.NewQueue()
+
+	if w.daemon.IsDaemon() {
+		go w.runDaemon()
+	}
 	return nil
 }
 
@@ -25,14 +32,20 @@ func (w *Worker) AddPriorityTask(priority int, task task.Task) task.Queue {
 	return w.tasks.AddPriorityTask(priority, task)
 }
 
-// RunTasks runs any queued tasks, returning the first error or nil if all have run.
+// RunTasks runs any queued tasks, returning the first Error or nil if all have run.
 // this is provided to allow tasks to be run in the background if the main thread has been claimed
 // e.g. the webserver is running.
-func (w *Worker) RunTasks() error {
-	return task.Run(w.tasks, context.Background())
+func (w *Worker) runDaemon() {
+	for {
+		err := w.Run()
+		if err != nil {
+			log.Println(err)
+		}
+		time.Sleep(20 * time.Millisecond)
+	}
 }
 
 // Run kernel stage. This just calls RunTasks()
 func (w *Worker) Run() error {
-	return w.RunTasks()
+	return task.Run(w.tasks, context.Background())
 }

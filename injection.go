@@ -1,10 +1,9 @@
 package kernel
 
 import (
-	"fmt"
+	"github.com/peter-mount/go-kernel/util/injection"
 	"reflect"
 	"strings"
-	"unsafe"
 )
 
 // inject implements injection using field tag's
@@ -26,7 +25,11 @@ func (k *Kernel) inject(v interface{}) error {
 	for f := 0; f < numField; f++ {
 		sf := elem.Field(f)
 		if sk, ok := sf.Tag.Lookup("kernel"); ok {
-			if err := k.injectField(sk, f, sf, tv); err != nil {
+			ip, err := injection.Of(f, sf, tv)
+			if err == nil {
+				err = k.injectField(sk, ip)
+			}
+			if err != nil {
 				return err
 			}
 		}
@@ -34,10 +37,10 @@ func (k *Kernel) inject(v interface{}) error {
 	return nil
 }
 
-type kernelInjector func(tags []string, f int, sf reflect.StructField, tv reflect.Value) error
+type kernelInjector func(tags []string, ip *injection.Point) error
 
 // injectField handles the injection of a specific field
-func (k *Kernel) injectField(tag string, f int, sf reflect.StructField, tv reflect.Value) error {
+func (k *Kernel) injectField(tag string, ip *injection.Point) error {
 	// Run through each param in the tag
 	tags := strings.Split(tag, ",")
 	var injector kernelInjector
@@ -57,13 +60,16 @@ func (k *Kernel) injectField(tag string, f int, sf reflect.StructField, tv refle
 	case "flag":
 		injector = k.injectFlag
 
+	case "config":
+		injector = k.injectConfig
+
 	default:
 		// Fail with an unsupported tag value
-		return fmt.Errorf("unsupported kernel tag %q", tags[0])
+		return ip.Errorf("unsupported kernel tag %q", tags[0])
 	}
 
 	if injector != nil {
-		if err := injector(tags[1:], f, sf, tv); err != nil {
+		if err := injector(tags[1:], ip); err != nil {
 			return err
 		}
 	}
@@ -72,13 +78,9 @@ func (k *Kernel) injectField(tag string, f int, sf reflect.StructField, tv refle
 }
 
 // injectService injects a dependency into the service structure
-func (k *Kernel) injectService(_ []string, f int, sf reflect.StructField, tv reflect.Value) error {
+func (k *Kernel) injectService(_ []string, ip *injection.Point) error {
 
-	if sf.Type.Kind() != reflect.Ptr {
-		return fmt.Errorf("injection failed \"%s %s\" not a pointer to a Service", sf.Name, sf.Type)
-	}
-
-	inst := reflect.New(sf.Type.Elem()).Interface()
+	inst := ip.New()
 	if sInst, ok := inst.(Service); ok {
 		// Add the service in the traditional way, returning us the deployed instance
 		resolvedService, err := k.AddService(sInst)
@@ -86,33 +88,19 @@ func (k *Kernel) injectService(_ []string, f int, sf reflect.StructField, tv ref
 			return err
 		}
 
-		setVal(f, sf, tv, resolvedService)
+		ip.Set(resolvedService)
 	} else {
-		return fmt.Errorf("injection failed \"%s %s\" not a Service", sf.Name, sf.Type)
+		return ip.Errorf("not a Service")
 	}
 
 	return nil
 }
 
-func setVal(f int, sf reflect.StructField, tv reflect.Value, val interface{}) {
-	// Get the Value for the field in the service struct
-	tf := tv.Elem().Field(f)
-
-	// Some magic, this provides us write access the field even if it's unexported.
-	// Without this tf.Set() will fail if the field is unexported
-	// see: https://stackoverflow.com/a/43918797/6734016
-	tf = reflect.NewAt(tf.Type(), unsafe.Pointer(tf.UnsafeAddr())).Elem()
-
-	// Convert our resolved service into a Value then convert to the field's type
-	vv := reflect.ValueOf(val)
-	tf.Set(vv.Convert(sf.Type))
-}
-
-func (k *Kernel) injectWorker(_ []string, f int, sf reflect.StructField, tv reflect.Value) error {
+func (k *Kernel) injectWorker(_ []string, ip *injection.Point) error {
 	resolvedService, err := k.AddService(&Worker{})
 	if err != nil {
 		return err
 	}
-	setVal(f, sf, tv, resolvedService)
+	ip.Set(resolvedService)
 	return nil
 }

@@ -3,7 +3,7 @@
 //
 // It manages the complete lifecycle of the application with muliple stages each
 // called in sequence: Init, PostInit, Start & Run. Once the kernel gets to the
-// Start phase then any error will cause the Stop phase to be invoked to allow
+// Start phase then any Error will cause the Stop phase to be invoked to allow
 // any Started service to cleanup.
 //
 // For most simple applications you can simply use kernel.Launch( s ) where s is
@@ -16,7 +16,7 @@
 // A Service is simply an Object implementing the Service interface and one or more
 // of the various lifecycle interfaces.
 //
-// If a service has dependencies then it should implement Init() and call AddService
+// If a service has injectionPoints then it should implement Init() and call AddService
 // to add them - the kernel will handle the rest.
 package kernel
 
@@ -84,7 +84,7 @@ type Kernel struct {
 
 // Launch is a convenience method to launch a single service.
 // This does the boiler plate work and requires the single service adds any
-// dependencies within it's Init() method, if any
+// injectionPoints within it's Init() method, if any
 func Launch(services ...Service) error {
 	k := &Kernel{
 		dependencies: util.NewSyncSet(),
@@ -135,7 +135,7 @@ func Launch(services ...Service) error {
 	return k.run()
 }
 
-// DependsOn just adds dependencies on other services, it does not return the resolved Service's.
+// DependsOn just adds injectionPoints on other services, it does not return the resolved Service's.
 // This is short of _,err:=k.AddService() for each dependency.
 func (k *Kernel) DependsOn(services ...Service) error {
 	// Add the supplied services in sequence. This creates the dependency graph
@@ -165,9 +165,9 @@ func (k *Kernel) AddService(s Service) (Service, error) {
 		name = t.PkgPath() + "|" + t.Name()
 	}
 
-	// Prevent circular dependencies
+	// Prevent circular injectionPoints
 	if k.dependencies.Contains(name) {
-		//if _, exists := k.dependencies[s.Name()]; exists {
+		//if _, exists := k.injectionPoints[s.Name()]; exists {
 		return nil, fmt.Errorf("Circular dependency %s", name)
 	}
 
@@ -176,17 +176,17 @@ func (k *Kernel) AddService(s Service) (Service, error) {
 		return service, nil
 	}
 
-	// This will prevent circular dependencies by using this map
+	// This will prevent circular injectionPoints by using this map
 	// to keep track of what's currently being deployed
 	k.dependencies.Add(name)
 	defer k.dependencies.Remove(name)
 
-	// inject dependencies using struct field tags
+	// inject injectionPoints using struct field tags
 	if err := k.inject(s); err != nil {
 		return nil, err
 	}
 
-	// Init the service, it can add dependencies here
+	// Init the service, it can add injectionPoints here
 	if is, ok := s.(InitialisableService); ok {
 		if err := is.Init(k); err != nil {
 			return nil, err

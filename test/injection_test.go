@@ -125,7 +125,7 @@ func TestService_InjectNonPointer(t *testing.T) {
 	if err == nil {
 		t.Fatal("No error returned")
 	}
-	if err.Error() != "injection failed \"service2 string\" not a pointer to a Service" {
+	if err.Error() != "injection failed \"service2 string\" in github.com/peter-mount/go-kernel/test/testDeployService5: must be a pointer" {
 		t.Fatal("Unexpected error returned: " + err.Error())
 	}
 }

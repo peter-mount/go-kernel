@@ -1,0 +1,4 @@
+# Config used with the tests in config_test.go
+#
+test1:
+  name: "test"
