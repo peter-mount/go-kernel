@@ -111,3 +111,16 @@ func (a Task) QueueWithPriority(priority int, tasks ...Task) Task {
 	}
 	return r
 }
+
+// Guard wraps a task so that any error or panic returned by that task is ignored.
+// It is used when you don't want the task to stop all other processing.
+func (a Task) Guard() Task {
+	return func(ctx context.Context) error {
+		defer func() {
+			_ = recover()
+		}()
+
+		_ = a.Do(ctx)
+		return nil
+	}
+}
