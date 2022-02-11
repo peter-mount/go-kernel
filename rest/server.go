@@ -22,6 +22,7 @@ import (
 
 // Server The internal config of a Server
 type Server struct {
+	daemon        *kernel.Daemon `kernel:"inject"`
 	Headers       []string       // The permitted headers
 	Origins       []string       // The permitted Origins
 	Methods       []string       // The permitted methods
@@ -51,6 +52,8 @@ func (s *Server) Init(_ *kernel.Kernel) error {
 }
 
 func (s *Server) PostInit() error {
+	s.daemon.SetWebserver()
+
 	// Set port from command line arg or env var
 	if *s.port < 1 || *s.port > 65534 {
 		p, err := strconv.Atoi(os.Getenv("RESTPORT"))

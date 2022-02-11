@@ -1,7 +1,8 @@
 package kernel
 
 type Daemon struct {
-	daemon bool
+	daemon    bool
+	webserver bool
 }
 
 func (d *Daemon) SetDaemon() {
@@ -13,5 +14,13 @@ func (d *Daemon) ClearDaemon() {
 }
 
 func (d *Daemon) IsDaemon() bool {
-	return d.daemon
+	return d.webserver || d.daemon
+}
+
+func (d *Daemon) SetWebserver() {
+	d.webserver = true
+}
+
+func (d *Daemon) IsWebserver() bool {
+	return d.webserver
 }

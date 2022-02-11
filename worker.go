@@ -24,8 +24,28 @@ func (w *Worker) AddPriorityTask(priority int, task task.Task) task.Queue {
 	return w
 }
 
+func (w *Worker) Start() error {
+	// If in webserver mode then run tasks in the background
+	if w.daemon.IsWebserver() {
+		go func() {
+			for {
+				_ = w.runDaemon()
+			}
+		}()
+		return w.runDaemon()
+	}
+	return nil
+}
+
 // Run kernel stage. This just calls RunTasks()
 func (w *Worker) Run() error {
+	if !w.daemon.IsWebserver() {
+		return w.runDaemon()
+	}
+	return nil
+}
+
+func (w *Worker) runDaemon() error {
 	run := true
 	for run {
 		if err := w.run(context.Background()); err != nil {
