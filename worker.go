@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/peter-mount/go-kernel/util"
 	"github.com/peter-mount/go-kernel/util/task"
+	"time"
 )
 
 type Worker struct {
@@ -32,7 +33,6 @@ func (w *Worker) Start() error {
 				_ = w.runDaemon()
 			}
 		}()
-		return w.runDaemon()
 	}
 	return nil
 }
@@ -52,6 +52,7 @@ func (w *Worker) runDaemon() error {
 			return err
 		}
 		run = w.daemon.IsDaemon()
+		time.Sleep(time.Millisecond * 10)
 	}
 	return nil
 }
