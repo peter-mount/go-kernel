@@ -4,6 +4,7 @@ import (
 	"github.com/gorilla/mux"
 	"io"
 	"net/http"
+	"strconv"
 )
 
 // A Rest query. This struct handles everything from the inbound request and
@@ -54,6 +55,16 @@ func (r *Rest) Var(name string) string {
 		return ""
 	}
 	return r.vars[name]
+}
+
+func (r *Rest) VarInt(name string, def int) int {
+	s := r.Var(name)
+	if s != "" {
+		if i, err := strconv.Atoi(s); err == nil {
+			return i
+		}
+	}
+	return def
 }
 
 // Status sets the HTTP status of the response.
