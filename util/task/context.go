@@ -37,14 +37,32 @@ func (a Task) RequireValue(key string) Task {
 }
 
 // ValueProvider provides a value at runtime, used with UsingValue
-type ValueProvider func(context.Context) (interface{}, error)
+type ValueProvider func(context.Context) (context.Context, error)
 
 // UsingValue adds a named value to the context before passing it to the parent task
 func (a Task) UsingValue(key string, f ValueProvider) Task {
 	return func(ctx context.Context) error {
 		value, err := f(ctx)
 		if err == nil {
-			err = a(context.WithValue(ctx, key, value))
+			err = a.Do(context.WithValue(ctx, key, value))
+		}
+		return err
+	}
+}
+
+// ContextProvider provides a context based on another, used by Using
+type ContextProvider func(context.Context) (context.Context, error)
+
+// Using allows a ContextProvider to be used in a task, an alternate method to UsingValue
+func (a Task) Using(f ContextProvider) Task {
+	return func(ctx context.Context) error {
+		ctx2, err := f(ctx)
+		if err == nil {
+			if ctx2 != nil {
+				err = a.Do(ctx2)
+			} else {
+				err = a.Do(ctx)
+			}
 		}
 		return err
 	}
