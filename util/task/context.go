@@ -37,7 +37,7 @@ func (a Task) RequireValue(key string) Task {
 }
 
 // ValueProvider provides a value at runtime, used with UsingValue
-type ValueProvider func(context.Context) (context.Context, error)
+type ValueProvider func(context.Context) (interface{}, error)
 
 // UsingValue adds a named value to the context before passing it to the parent task
 func (a Task) UsingValue(key string, f ValueProvider) Task {
