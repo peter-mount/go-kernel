@@ -55,6 +55,13 @@ func (s StringSlice) Sort() StringSlice {
 
 type StringSliceHandler func(StringSlice) (StringSlice, error)
 
+func (a StringSliceHandler) Do(s StringSlice) (StringSlice, error) {
+	if a != nil {
+		return a(s)
+	}
+	return nil, nil
+}
+
 func (a StringSliceHandler) Then(b StringSliceHandler) StringSliceHandler {
 	return func(s StringSlice) (StringSlice, error) {
 		s, err := a(s)
