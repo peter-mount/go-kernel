@@ -59,7 +59,7 @@ func (a StringSliceHandler) Do(s StringSlice) (StringSlice, error) {
 	if a != nil {
 		return a(s)
 	}
-	return nil, nil
+	return s, nil
 }
 
 func (a StringSliceHandler) Then(b StringSliceHandler) StringSliceHandler {
