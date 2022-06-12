@@ -93,10 +93,7 @@ func (t *testDeployService4) Name() string {
 // This is in a separate package as we do not want the Kernal to have direct access
 // to unexported fields within these two test services
 func TestService_InjectNonStruct(t *testing.T) {
-
-	s := &testDeployService4{}
-
-	err := kernel.Launch(s)
+	err := kernel.Launch(&testDeployService4{})
 	if err == nil {
 		t.Fatal("No error returned")
 	}

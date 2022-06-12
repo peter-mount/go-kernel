@@ -1,6 +1,11 @@
 package kernel
 
-import "github.com/peter-mount/go-kernel/util"
+import (
+	"errors"
+	"fmt"
+	"github.com/peter-mount/go-kernel/util"
+	"reflect"
+)
 
 // Our singleton instance of the kernel
 var instance *Kernel
@@ -33,5 +38,30 @@ func Register(services ...Service) {
 
 	if err != nil {
 		panic(err)
+	}
+}
+
+// RegisterAPI registers an API
+func RegisterAPI(api reflect.Type, service Service) {
+	err := assertInstanceAmendable()
+	if err != nil {
+		panic(err)
+	}
+
+	// api must be an interface
+	kt := api.Elem()
+	if kt.Kind() != reflect.Interface {
+		panic(errors.New("cannot register non-interface"))
+	}
+
+	name := getServiceName(kt)
+
+	resolvedService, err := instance.addService(name, service)
+	if err != nil {
+		panic(err)
+	}
+
+	if resolvedService != service {
+		panic(fmt.Errorf("service %s already registered", name))
 	}
 }

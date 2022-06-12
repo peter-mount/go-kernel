@@ -154,12 +154,12 @@ func assertInstanceAmendable() error {
 	return nil
 }
 
+func getServiceName(t reflect.Type) string {
+	return t.PkgPath() + "|" + t.Name()
+}
+
 // AddService adds a service to the kernel
 func (k *Kernel) AddService(s Service) (Service, error) {
-	if err := assertInstanceAmendable(); err != nil {
-		return nil, err
-	}
-
 	// Generate the service name either via NamedService or reflection
 	var name string
 	if ns, ok := s.(NamedService); ok {
@@ -169,7 +169,15 @@ func (k *Kernel) AddService(s Service) (Service, error) {
 		if t.Kind() != reflect.Struct {
 			return nil, errors.New("Cannot deploy non-service")
 		}
-		name = t.PkgPath() + "|" + t.Name()
+		name = getServiceName(t)
+	}
+
+	return k.addService(name, s)
+}
+
+func (k *Kernel) addService(name string, s Service) (Service, error) {
+	if err := assertInstanceAmendable(); err != nil {
+		return nil, err
 	}
 
 	// Prevent circular injectionPoints

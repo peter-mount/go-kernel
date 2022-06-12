@@ -37,6 +37,7 @@ RUN CGO_ENABLED=0 go test -v ./test
 
 # moduletest must be separate as it's single test will only work once
 RUN CGO_ENABLED=0 go test -v ./test/moduletest
+RUN CGO_ENABLED=0 go test -v ./test/interfaces
 
 #FROM build AS compiler
 #RUN CGO_ENABLED=0 go build -o test .

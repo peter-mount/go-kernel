@@ -80,6 +80,15 @@ func (k *Kernel) injectField(tag string, ip *injection.Point) error {
 // injectService injects a dependency into the service structure
 func (k *Kernel) injectService(_ []string, ip *injection.Point) error {
 
+	// See if we already have the service deployed.
+	// At this point it could be either a Service or an API
+	t := ip.Type()
+	n := getServiceName(t)
+	if resolvedService, exists := k.index[n]; exists {
+		ip.Set(resolvedService)
+		return nil
+	}
+
 	inst := ip.New()
 	if sInst, ok := inst.(Service); ok {
 		// Add the service in the traditional way, returning us the deployed instance
