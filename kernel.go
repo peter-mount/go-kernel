@@ -86,25 +86,25 @@ type Kernel struct {
 // This does the boiler plate work and requires the single service adds any
 // injectionPoints within it's Init() method, if any
 func Launch(services ...Service) error {
-	k := &Kernel{
-		dependencies: util.NewSyncSet(),
-		services:     util.NewList(),
-		stopList:     util.NewList(),
-		index:        make(map[string]Service),
-	}
 
 	// Add the supplied services in sequence. This creates the dependency graph
-	if err := k.DependsOn(services...); err != nil {
+	if err := instance.DependsOn(services...); err != nil {
 		return err
 	}
 
+	if instance.services.IsEmpty() {
+		return errors.New("kernel is empty")
+	}
+
 	// From this point nothing else can be added to the Kernel
-	k.readOnly = true
+	instance.readOnly = true
+	// When kernel exits, then reset it
+	defer resetKernel()
 
 	flag.Parse()
 
 	// PostInit services
-	if err := k.postInit(); err != nil {
+	if err := instance.postInit(); err != nil {
 		return err
 	}
 
@@ -116,7 +116,7 @@ func Launch(services ...Service) error {
 		sig := <-signals
 		log.Println("Signal", sig)
 
-		k.stop()
+		instance.stop()
 
 		log.Println("Application terminated")
 
@@ -124,33 +124,40 @@ func Launch(services ...Service) error {
 	}()
 
 	// At this point stop all started services on failure or exit
-	defer k.stop()
+	defer instance.stop()
 
 	// Start services
-	if err := k.start(); err != nil {
+	if err := instance.start(); err != nil {
 		return err
 	}
 
 	// Run services
-	return k.run()
+	return instance.run()
 }
 
 // DependsOn just adds injectionPoints on other services, it does not return the resolved Service's.
-// This is short of _,err:=k.AddService() for each dependency.
+// This is short of _,err:=instance.AddService() for each dependency.
 func (k *Kernel) DependsOn(services ...Service) error {
 	// Add the supplied services in sequence. This creates the dependency graph
 	for _, s := range services {
-		if _, err := k.AddService(s); err != nil {
+		if _, err := instance.AddService(s); err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
+func assertInstanceAmendable() error {
+	if instance.readOnly {
+		return errors.New("kernel is read only")
+	}
+	return nil
+}
+
 // AddService adds a service to the kernel
 func (k *Kernel) AddService(s Service) (Service, error) {
-	if k.readOnly {
-		return nil, errors.New("Cannot add as Kernel is read only")
+	if err := assertInstanceAmendable(); err != nil {
+		return nil, err
 	}
 
 	// Generate the service name either via NamedService or reflection
@@ -166,23 +173,23 @@ func (k *Kernel) AddService(s Service) (Service, error) {
 	}
 
 	// Prevent circular injectionPoints
-	if k.dependencies.Contains(name) {
-		//if _, exists := k.injectionPoints[s.Name()]; exists {
+	if instance.dependencies.Contains(name) {
+		//if _, exists := instance.injectionPoints[s.Name()]; exists {
 		return nil, fmt.Errorf("Circular dependency %s", name)
 	}
 
 	// Check we don't already have it
-	if service, exists := k.index[name]; exists {
+	if service, exists := instance.index[name]; exists {
 		return service, nil
 	}
 
 	// This will prevent circular injectionPoints by using this map
 	// to keep track of what's currently being deployed
-	k.dependencies.Add(name)
-	defer k.dependencies.Remove(name)
+	instance.dependencies.Add(name)
+	defer instance.dependencies.Remove(name)
 
 	// inject injectionPoints using struct field tags
-	if err := k.inject(s); err != nil {
+	if err := instance.inject(s); err != nil {
 		return nil, err
 	}
 
@@ -194,14 +201,14 @@ func (k *Kernel) AddService(s Service) (Service, error) {
 	}
 
 	// Finally, add the service to the end of the startup list
-	k.services.Add(s)
-	k.index[name] = s
+	instance.services.Add(s)
+	instance.index[name] = s
 
 	return s, nil
 }
 
 func (k *Kernel) postInit() error {
-	return k.services.ForEachFailFast(func(s interface{}) error {
+	return instance.services.ForEachFailFast(func(s interface{}) error {
 		if pi, ok := s.(PostInitialisableService); ok {
 			if err := pi.PostInit(); err != nil {
 				return err
@@ -212,7 +219,7 @@ func (k *Kernel) postInit() error {
 }
 
 func (k *Kernel) start() error {
-	return k.services.ForEachFailFast(func(s interface{}) error {
+	return instance.services.ForEachFailFast(func(s interface{}) error {
 		// Start the service
 		if ss, ok := s.(StartableService); ok {
 			if err := (ss).Start(); err != nil {
@@ -222,20 +229,20 @@ func (k *Kernel) start() error {
 
 		// Add to stop list if necessary
 		if ss, ok := s.(StoppableService); ok {
-			k.stopList.Add(ss)
+			instance.stopList.Add(ss)
 		}
 		return nil
 	})
 }
 
 func (k *Kernel) stop() {
-	k.stopList.ReverseIterator().ForEach(func(i interface{}) {
+	instance.stopList.ReverseIterator().ForEach(func(i interface{}) {
 		(i).(StoppableService).Stop()
 	})
 }
 
 func (k *Kernel) run() error {
-	return k.services.ForEachFailFast(func(s interface{}) error {
+	return instance.services.ForEachFailFast(func(s interface{}) error {
 		if rs, ok := s.(RunnableService); ok {
 			if err := rs.Run(); err != nil {
 				return err
