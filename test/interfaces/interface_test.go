@@ -6,7 +6,6 @@ package interfaces
 import (
 	"fmt"
 	"github.com/peter-mount/go-kernel"
-	"reflect"
 	"strings"
 	"testing"
 )
@@ -27,11 +26,16 @@ type Service3 struct {
 	api API `kernel:"inject"`
 }
 
+// gets set to true when the service is run
+var service3Run bool
+
 func (s *Service3) Run() error {
 	result := s.api.Get()
 	if result != 1 {
 		return fmt.Errorf("expected service 1 got %d", result)
 	}
+
+	service3Run = true
 	return nil
 }
 
@@ -49,21 +53,26 @@ func registerService(t *testing.T, s kernel.Service) {
 			}
 		}
 	}()
-	kernel.RegisterAPI(reflect.TypeOf((*API)(nil)), s)
+	kernel.RegisterAPI((*API)(nil), s)
 }
 
 func TestInterfaceLookup(t *testing.T) {
 
 	// Register Service1 against API
-	registerService(t, &Service1{})
+	kernel.RegisterAPI((*API)(nil), &Service1{})
 
 	// Try to register service 2 as API.
-	//This would normally panic as it's already registered but we want this
+	// This would normally panic as it's already registered, but we want this hence
+	// we use the helper function to capture the panic
 	registerService(t, &Service2{})
 
 	// Now run Service3 which depends on API. It will fail if Service2 is present and not 1
 	err := kernel.Launch(&Service3{})
 	if err != nil {
 		t.Fatal(err)
+	}
+
+	if !service3Run {
+		t.Fatal("Service3 did not run")
 	}
 }

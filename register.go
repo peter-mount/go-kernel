@@ -42,14 +42,14 @@ func Register(services ...Service) {
 }
 
 // RegisterAPI registers an API
-func RegisterAPI(api reflect.Type, service Service) {
+func RegisterAPI(api interface{}, service Service) {
 	err := assertInstanceAmendable()
 	if err != nil {
 		panic(err)
 	}
 
 	// api must be an interface
-	kt := api.Elem()
+	kt := reflect.TypeOf(api).Elem()
 	if kt.Kind() != reflect.Interface {
 		panic(errors.New("cannot register non-interface"))
 	}
