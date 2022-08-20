@@ -6,6 +6,7 @@ import (
 	"github.com/peter-mount/go-kernel/util/injection"
 	"gopkg.in/yaml.v2"
 	"os"
+	"path/filepath"
 	"strings"
 )
 
@@ -19,6 +20,7 @@ import (
 type dynamicConfig struct {
 	filename *string                 `kernel:"flag,config,Configuration file,config.yaml"`
 	entries  map[string]*configEntry // Map of entries
+	files    map[string]interface{}  // Map used to prevent infinite loop loading files
 }
 
 type configEntry struct {
@@ -51,7 +53,27 @@ func (dc *dynamicConfig) add(name string, ip *injection.Point) error {
 }
 
 func (dc *dynamicConfig) Start() error {
-	f, err := os.Open(*dc.filename)
+	dc.files = make(map[string]interface{})
+	return dc.processFile(*dc.filename)
+}
+
+const (
+	includePrefix = "#include "
+)
+
+func (dc *dynamicConfig) processFile(filename string) error {
+	absFileName, err := filepath.Abs(filename)
+	if err != nil {
+		return err
+	}
+
+	// Prevent loading the same file twice
+	if _, exists := dc.files[absFileName]; exists {
+		return fmt.Errorf("already read %q, possible infinite loop", absFileName)
+	}
+	dc.files[absFileName] = true
+
+	f, err := os.Open(filename)
 	if err != nil {
 		return err
 	}
@@ -62,31 +84,56 @@ func (dc *dynamicConfig) Start() error {
 	for scanner.Scan() {
 		line := scanner.Text()
 
-		// TODO this needs to be first char is alpha
 		if len(line) > 0 {
-			if line[0] > 64 {
-				if err := dc.processLines(lines); err != nil {
+			c := line[0]
+			switch {
+
+			case strings.HasPrefix(line, includePrefix):
+				// Process any existing block
+				if err := dc.processBlock(lines); err != nil {
 					return err
 				}
-				lines = nil
-			}
 
-			// Strip comments
-			if line[0] != '#' {
+				// Everything after includePrefix is the filename, trim excess white space
+				nextFilename := strings.TrimSpace(line[len(includePrefix):])
+				l := len(nextFilename)
+
+				// If filename is not empty and is wrapped with " then load it
+				if l > 2 && nextFilename[0] == '"' && nextFilename[l-1] == '"' {
+					err = dc.processFile(nextFilename[1 : l-1])
+					if err != nil {
+						return err
+					}
+				} else {
+					return fmt.Errorf("invalid #include %q in %q", line, filename)
+				}
+
+			case c == '#':
+				// Strip comments
+
+			case (c >= 'A' && c < 'Z') || (c >= 'a' && c < 'z'):
+				// Line starts with a character then it's the start of a block
+
+				// Process any existing block
+				if err := dc.processBlock(lines); err != nil {
+					return err
+				}
+
+				// Start the block with this line
+				lines = []string{line}
+
+			default:
+				// Append to the line list
 				lines = append(lines, line)
 			}
 		}
 	}
 
 	// Handle last config block
-	if err := dc.processLines(lines); err != nil {
-		return err
-	}
-
-	return nil
+	return dc.processBlock(lines)
 }
 
-func (dc *dynamicConfig) processLines(lines []string) error {
+func (dc *dynamicConfig) processBlock(lines []string) error {
 	if len(lines) > 0 {
 		i := strings.Index(lines[0], ":")
 		if i < 0 {
