@@ -94,6 +94,9 @@ func (dc *dynamicConfig) processFile(filename string) error {
 					return err
 				}
 
+				// Clear the current block, so we start a fresh once the included file has been read
+				lines = nil
+
 				// Everything after includePrefix is the filename, trim excess white space
 				nextFilename := strings.TrimSpace(line[len(includePrefix):])
 				l := len(nextFilename)
@@ -137,7 +140,7 @@ func (dc *dynamicConfig) processBlock(lines []string) error {
 	if len(lines) > 0 {
 		i := strings.Index(lines[0], ":")
 		if i < 0 {
-			return fmt.Errorf("invalid")
+			return fmt.Errorf("invalid config parameter %s", strings.Join(lines, "\\n"))
 		}
 
 		// Name of section, keep everything after : but trimmed incase it's a simple config entry
