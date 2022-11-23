@@ -165,11 +165,7 @@ func (k *Kernel) AddService(s Service) (Service, error) {
 	if ns, ok := s.(NamedService); ok {
 		name = ns.Name()
 	} else {
-		t := reflect.ValueOf(s).Elem().Type()
-		if t.Kind() != reflect.Struct {
-			return nil, errors.New("Cannot deploy non-service")
-		}
-		name = getServiceName(t)
+		name = getServiceName(reflect.ValueOf(s).Elem().Type())
 	}
 
 	return k.addService(name, s)
@@ -189,6 +185,11 @@ func (k *Kernel) addService(name string, s Service) (Service, error) {
 	// Check we don't already have it
 	if service, exists := instance.index[name]; exists {
 		return service, nil
+	}
+
+	// At this point we must have a valid service
+	if reflect.ValueOf(s).Elem().Type().Kind() != reflect.Struct {
+		return nil, errors.New("Cannot deploy non-service")
 	}
 
 	// This will prevent circular injectionPoints by using this map
