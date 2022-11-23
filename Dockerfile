@@ -33,6 +33,7 @@ FROM build AS test
 # Run each package separately so they don't interfere with each other
 RUN CGO_ENABLED=0 go test -v .
 RUN CGO_ENABLED=0 go test -v ./util
+RUN CGO_ENABLED=0 go test -v ./util/walk
 RUN CGO_ENABLED=0 go test -v ./test
 
 # moduletest must be separate as it's single test will only work once
