@@ -56,7 +56,7 @@ func RegisterAPI(api interface{}, service Service) {
 
 	name := getServiceName(kt)
 
-	resolvedService, err := instance.addService(name, service)
+	resolvedService, err := instance.addService(name, service, true)
 	if err != nil {
 		panic(err)
 	}

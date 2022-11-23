@@ -168,10 +168,10 @@ func (k *Kernel) AddService(s Service) (Service, error) {
 		name = getServiceName(reflect.ValueOf(s).Elem().Type())
 	}
 
-	return k.addService(name, s)
+	return k.addService(name, s, false)
 }
 
-func (k *Kernel) addService(name string, s Service) (Service, error) {
+func (k *Kernel) addService(name string, s Service, api bool) (Service, error) {
 	if err := assertInstanceAmendable(); err != nil {
 		return nil, err
 	}
@@ -188,7 +188,7 @@ func (k *Kernel) addService(name string, s Service) (Service, error) {
 	}
 
 	// At this point we must have a valid service
-	if reflect.ValueOf(s).Elem().Type().Kind() != reflect.Struct {
+	if !api && reflect.ValueOf(s).Elem().Type().Kind() != reflect.Struct {
 		return nil, errors.New("Cannot deploy non-service")
 	}
 
