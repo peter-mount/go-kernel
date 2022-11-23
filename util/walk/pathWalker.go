@@ -25,6 +25,14 @@ func NewPathWalker() PathWalker {
 	return nil
 }
 
+// Do will call a PathWalker. If the walker is null then null is returned.
+func (a PathWalker) Do(path string, info os.FileInfo) error {
+	if a != nil {
+		return a(path, info)
+	}
+	return nil
+}
+
 // Then performs the current PathWalker then another PathWalker
 func (a PathWalker) Then(b PathWalker) PathWalker {
 	if a == nil {
@@ -125,12 +133,34 @@ func (a PathWalker) PathHasNotSuffix(s string) PathWalker {
 	})
 }
 
+// FollowSymlinks will cause the walker to follow a symlink, unlike filepath.Walk() with refuses to do do.
+func (a PathWalker) FollowSymlinks() PathWalker {
+	return func(path string, info os.FileInfo) error {
+		if (info.Mode() & os.ModeSymlink) == os.ModeSymlink {
+			link, err := os.Readlink(path)
+			if err != nil {
+				if os.IsPermission(err) {
+					return filepath.SkipDir
+				}
+				return err
+			}
+			link = filepath.Join(filepath.Dir(path), link)
+			if err != nil {
+				return err
+			}
+			return a.Walk(link)
+		}
+
+		return a.Do(path, info)
+	}
+}
+
 // Walk performs the actual walk against the built PathWalker
 func (a PathWalker) Walk(root string) error {
 	return filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
 		// Any error walking to the file or directory will abort the walk immediately
 		if err != nil {
-			// go-kernel#1 If we are trying to enter a directory but it's a permission error then skip it.
+			// go-kernel#1 If we are trying to enter a directory, and it's a permission error then skip the directory
 			if info.IsDir() && os.IsPermission(err) {
 				return filepath.SkipDir
 			}
@@ -138,9 +168,7 @@ func (a PathWalker) Walk(root string) error {
 		}
 
 		// Enter our PathWalker chain
-		if a != nil {
-			err = a(path, info)
-		}
+		err = a.Do(path, info)
 
 		// Don't pass this to the Walker as it just means we have stopped processing
 		if err == predicateFail {
