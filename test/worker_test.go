@@ -2,8 +2,8 @@ package test
 
 import (
 	"context"
-	"github.com/peter-mount/go-kernel"
-	"github.com/peter-mount/go-kernel/util/task"
+	"github.com/peter-mount/go-kernel/v2"
+	"github.com/peter-mount/go-kernel/v2/util/task"
 	"log"
 	"sync/atomic"
 	"testing"

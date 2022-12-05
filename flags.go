@@ -2,7 +2,7 @@ package kernel
 
 import (
 	"flag"
-	"github.com/peter-mount/go-kernel/util/injection"
+	"github.com/peter-mount/go-kernel/v2/util/injection"
 	"reflect"
 	"strconv"
 )

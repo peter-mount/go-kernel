@@ -6,7 +6,7 @@ import (
 	"flag"
 	"fmt"
 	"github.com/etcd-io/bbolt"
-	"github.com/peter-mount/go-kernel"
+	"github.com/peter-mount/go-kernel/v2"
 	"os"
 	"time"
 )

@@ -3,7 +3,7 @@ package kernel
 import (
 	"bufio"
 	"fmt"
-	"github.com/peter-mount/go-kernel/util/injection"
+	"github.com/peter-mount/go-kernel/v2/util/injection"
 	"gopkg.in/yaml.v2"
 	"os"
 	"path/filepath"

@@ -2,7 +2,7 @@ package test
 
 import (
 	"flag"
-	"github.com/peter-mount/go-kernel"
+	"github.com/peter-mount/go-kernel/v2"
 	"testing"
 )
 

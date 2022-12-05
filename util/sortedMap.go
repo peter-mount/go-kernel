@@ -1,6 +1,6 @@
 package util
 
-import "github.com/peter-mount/go-kernel/util/strings"
+import "github.com/peter-mount/go-kernel/v2/util/strings"
 
 type SortedMap map[string]interface{}
 

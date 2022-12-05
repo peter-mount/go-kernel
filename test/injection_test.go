@@ -1,7 +1,7 @@
 package test
 
 import (
-	"github.com/peter-mount/go-kernel"
+	"github.com/peter-mount/go-kernel/v2"
 	"testing"
 )
 
@@ -122,7 +122,7 @@ func TestService_InjectNonPointer(t *testing.T) {
 	if err == nil {
 		t.Fatal("No error returned")
 	}
-	if err.Error() != "injection failed \"service2 string\" in github.com/peter-mount/go-kernel/test/testDeployService5: must be a pointer" {
+	if err.Error() != "injection failed \"service2 string\" in github.com/peter-mount/go-kernel/v2/test/testDeployService5: must be a pointer" {
 		t.Fatal("Unexpected error returned: " + err.Error())
 	}
 }

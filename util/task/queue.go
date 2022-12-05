@@ -3,7 +3,7 @@ package task
 import (
 	"context"
 	"errors"
-	"github.com/peter-mount/go-kernel/util"
+	"github.com/peter-mount/go-kernel/v2/util"
 )
 
 type Queue interface {

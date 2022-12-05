@@ -5,7 +5,7 @@ package interfaces
 
 import (
 	"fmt"
-	"github.com/peter-mount/go-kernel"
+	"github.com/peter-mount/go-kernel/v2"
 	"strings"
 	"testing"
 )

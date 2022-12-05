@@ -3,7 +3,7 @@ package kernel
 import (
 	"errors"
 	"fmt"
-	"github.com/peter-mount/go-kernel/util"
+	"github.com/peter-mount/go-kernel/v2/util"
 	"reflect"
 )
 
