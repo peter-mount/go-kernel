@@ -1,4 +1,4 @@
-module github.com/peter-mount/go-kernel
+module github.com/peter-mount/go-kernel/v2
 
 go 1.17
 
