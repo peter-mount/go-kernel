@@ -1,0 +1,4 @@
+# Config used with the tests in config_test.go
+#
+test2:
+  name: "included test"

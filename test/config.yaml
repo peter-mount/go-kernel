@@ -2,3 +2,5 @@
 #
 test1:
   name: "test"
+
+#include "config_include.yaml"

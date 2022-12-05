@@ -5,12 +5,29 @@ import (
 	"testing"
 )
 
+const (
+	// Values in config.yaml and config_include.yaml
+	test1Name = "test"
+	test2Name = "included test"
+)
+
 type configService struct {
-	conf *config1 `kernel:"config,test1"`
+	conf         *config1 `kernel:"config,test1"`
+	includedConf *config1 `kernel:"config,test2"`
 }
 
 type config1 struct {
 	Name string `yaml:"name"`
+}
+
+func (c *config1) test(t *testing.T, expected string) {
+	if c == nil {
+		t.Fatal("No dependency injected")
+	}
+
+	if c.Name != expected {
+		t.Errorf("Name not read, got %q expected %q", c.Name, expected)
+	}
 }
 
 type configService2 struct {
@@ -27,28 +44,17 @@ func TestConfig_Multi(t *testing.T) {
 	}
 
 	// Test injected instance in cs2
-
-	if cs2.conf == nil {
-		t.Fatal("No config injected")
-	}
-
-	if cs2.conf.Name != "test" {
-		t.Errorf("Name not read, got %q expected \"test\"", cs2.conf.Name)
-	}
+	cs2.conf.test(t, test1Name)
 
 	// Now check instance under cs1
-
-	if cs2.cs1.conf == nil {
-		t.Fatal("No dependency injected")
-	}
-
-	if cs2.cs1.conf.Name != "test" {
-		t.Errorf("Name not read, got %q expected \"test\"", cs2.cs1.conf.Name)
-	}
+	cs2.cs1.conf.test(t, test1Name)
 
 	// Now check instance injected in both is the same one
 
 	if cs2.conf != cs2.cs1.conf {
 		t.Errorf("Injected instance should be same but isn't")
 	}
+
+	// Test included config
+	cs2.cs1.includedConf.test(t, test2Name)
 }

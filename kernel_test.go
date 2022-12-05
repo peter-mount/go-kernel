@@ -100,3 +100,13 @@ func TestKernel_LaunchOrder(t *testing.T) {
 		s.t.Errorf("service 1 was not original one deployed")
 	}
 }
+
+// TestEmptyKernel should fail if launching with no services does _not_ return an error
+func TestEmptyKernel(t *testing.T) {
+
+	err := Launch()
+	if err == nil {
+		t.Fatal("No error returned")
+	}
+
+}

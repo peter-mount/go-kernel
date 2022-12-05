@@ -17,11 +17,28 @@ ENV CGO_ENABLED=0
 ENV GOOS=linux
 
 WORKDIR /work
+
+# Seems go 1.16+ have changed things so this is required otherwise modules are not handled correctly with go.sum breaking
+# via https://github.com/golang/go/issues/44129#issuecomment-860060061
+RUN go env -w GOFLAGS=-mod=mod
+
+# Download go module dependencies
+COPY go.mod .
+RUN go mod download
+
 ADD . .
 
 FROM build AS test
 
-RUN CGO_ENABLED=0 go test -v . ./util ./test
+# Run each package separately so they don't interfere with each other
+RUN CGO_ENABLED=0 go test -v .
+RUN CGO_ENABLED=0 go test -v ./util
+RUN CGO_ENABLED=0 go test -v ./util/walk
+RUN CGO_ENABLED=0 go test -v ./test
+
+# moduletest must be separate as it's single test will only work once
+RUN CGO_ENABLED=0 go test -v ./test/moduletest
+RUN CGO_ENABLED=0 go test -v ./test/interfaces
 
 #FROM build AS compiler
 #RUN CGO_ENABLED=0 go build -o test .
