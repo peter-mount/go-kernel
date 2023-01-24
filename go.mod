@@ -7,7 +7,7 @@ require (
 	github.com/gorilla/handlers v1.5.1
 	github.com/gorilla/mux v1.7.2
 	github.com/kr/pretty v0.1.0 // indirect
-	github.com/lib/pq v1.1.1
+	github.com/lib/pq v1.10.4
 	github.com/peter-mount/go.uuid v1.2.1-0.20180103174451-36e9d2ebbde5
 	github.com/rabbitmq/amqp091-go v1.3.4
 	go.etcd.io/bbolt v1.3.3 // indirect
