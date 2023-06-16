@@ -92,3 +92,59 @@ func (a Task) Guard() Task {
 		return nil
 	}
 }
+
+// Defer will always run a task after this one has executed.
+func (a Task) Defer(b Task) Task {
+	if a == nil {
+		return b
+	}
+	if b == nil {
+		return a
+	}
+	return func(ctx context.Context) error {
+		defer b(ctx)
+		return a(ctx)
+	}
+}
+
+// OnError will, if this Task returned an error, call another Task.
+// The Task returned will always return nil.
+//
+// When the error Task is called, the context will have the key "error" set to the error returned by the main Task.
+func (a Task) OnError(b Task) Task {
+	if a == nil {
+		return b
+	}
+	if b == nil {
+		return a
+	}
+	return func(ctx context.Context) error {
+		err := a(ctx)
+		if err != nil {
+			return b(context.WithValue(ctx, "error", err))
+		}
+		return nil
+	}
+}
+
+// OnPanic will call another Task if a panic occurred.
+//
+// When the panic Task is called, the context will have the key "panic" set to the panic that occurred.
+//
+// The Task returned will return either the error from the original Task, nil if none happened, or the return of the panic Task.
+func (a Task) OnPanic(b Task) Task {
+	if a == nil {
+		return b
+	}
+	if b == nil {
+		return a
+	}
+	return func(ctx context.Context) (err error) {
+		defer func() {
+			if err1 := recover(); err1 != nil {
+				err = b(context.WithValue(ctx, "panic", err))
+			}
+		}()
+		return a(ctx)
+	}
+}
