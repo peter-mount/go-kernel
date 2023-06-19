@@ -142,9 +142,27 @@ func (a Task) OnPanic(b Task) Task {
 	return func(ctx context.Context) (err error) {
 		defer func() {
 			if err1 := recover(); err1 != nil {
-				err = b(context.WithValue(ctx, "panic", err))
+				err = b(context.WithValue(ctx, "panic", err1))
 			}
 		}()
 		return a(ctx)
 	}
+}
+
+func GetError(ctx context.Context) error {
+	return getError(ctx, "error")
+}
+
+func GetPanic(ctx context.Context) error {
+	return getError(ctx, "panic")
+}
+
+func getError(ctx context.Context, key string) error {
+	v := ctx.Value(key)
+	if v != nil {
+		if err, ok := v.(error); ok {
+			return err
+		}
+	}
+	return nil
 }
