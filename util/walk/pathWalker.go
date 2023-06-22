@@ -161,7 +161,7 @@ func (a PathWalker) Walk(root string) error {
 		// Any error walking to the file or directory will abort the walk immediately
 		if err != nil {
 			// go-kernel#1 If we are trying to enter a directory, and it's a permission error then skip the directory
-			if info.IsDir() && os.IsPermission(err) {
+			if info != nil && info.IsDir() && os.IsPermission(err) {
 				return filepath.SkipDir
 			}
 			return err
