@@ -52,8 +52,6 @@ func (s *Server) Init(_ *kernel.Kernel) error {
 }
 
 func (s *Server) PostInit() error {
-	s.daemon.SetWebserver()
-
 	// Set port from command line arg or env var
 	if *s.port < 1 || *s.port > 65534 {
 		p, err := strconv.Atoi(os.Getenv("RESTPORT"))
@@ -87,6 +85,16 @@ func (s *Server) PostInit() error {
 		s.router.Use(ConsoleLogger())
 	}
 
+	return nil
+}
+
+func (s *Server) Start() error {
+	// Disable the server if asked
+	if *s.disableServer {
+		return nil
+	}
+
+	s.daemon.SetWebserver()
 	return nil
 }
 
@@ -175,4 +183,9 @@ func (s *Server) Run() error {
 	} else {
 		return server.ListenAndServe()
 	}
+}
+
+// Disable allows a client to disable rest - e.g. for batch work
+func (s *Server) Disable() {
+	*s.disableServer = true
 }
