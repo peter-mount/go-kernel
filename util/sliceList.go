@@ -8,8 +8,12 @@ type sliceList[T comparable] struct {
 	data []T
 }
 
-func NewList[T comparable]() List[T] {
-	return &sliceList[T]{}
+func NewList[T comparable](v ...T) List[T] {
+	l := &sliceList[T]{}
+	if len(v) > 0 {
+		l.AddAll(v...)
+	}
+	return l
 }
 
 func (s *sliceList[T]) Clear() {
@@ -47,6 +51,10 @@ func (s *sliceList[T]) ForEachAsync(f func(T)) {
 func (s *sliceList[T]) Add(v T) bool {
 	s.data = append(s.data, v)
 	return true
+}
+
+func (s *sliceList[T]) AddAll(v ...T) {
+	s.data = append(s.data, v...)
 }
 
 func (s *sliceList[T]) AddIndex(i int, v T) {

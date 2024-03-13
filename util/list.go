@@ -19,4 +19,6 @@ type List[T any] interface {
 	RemoveIndex(i int) bool
 	// FindIndexOf returns the index of the first occurrence that matches the provided predicate
 	FindIndexOf(Predicate[T]) int
+	// AddAll adds all entries to the list
+	AddAll(...T)
 }

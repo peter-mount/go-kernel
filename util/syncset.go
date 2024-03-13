@@ -9,9 +9,12 @@ type syncSet[T comparable] struct {
 }
 
 // NewSyncSet creates a new Synchronous Set
-func NewSyncSet[T comparable]() Set[T] {
+func NewSyncSet[T comparable](v ...T) Set[T] {
 	s := &syncSet[T]{}
 	s.Clear()
+	if len(v) > 0 {
+		s.AddAll(v...)
+	}
 	return s
 }
 
