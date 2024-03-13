@@ -9,11 +9,11 @@ import (
 //
 // Example:
 //
-// func handler(w http.ResponseWriter, r *http.Request) {
-//   rw := &StatusCodeResponseWriter{}
-//   ServeHTTP( rw.Wrap( w ), r )
-//   statusCode := rw.GetStatus()
-// }
+//	func handler(w http.ResponseWriter, r *http.Request) {
+//	  rw := &StatusCodeResponseWriter{}
+//	  ServeHTTP( rw.Wrap( w ), r )
+//	  statusCode := rw.GetStatus()
+//	}
 //
 // The Wrap() function returns a http.ResponseWriter with supports the
 // http.Flusher or http.Pusher interfaces if the one being wrapped supports it.
@@ -35,32 +35,32 @@ func (rw *StatusCodeResponseWriter) GetStatus() int {
 // Wrap wraps an existing http.ResponseWriter to our instance.
 // If the wrapped instance implements the http.Flusher or http.Pusher interfaces
 // then the returned instance also supports it.
-func (with *StatusCodeResponseWriter) Wrap(wrap http.ResponseWriter) http.ResponseWriter {
-	with.ResponseWriter = wrap
+func (rw *StatusCodeResponseWriter) Wrap(wrap http.ResponseWriter) http.ResponseWriter {
+	rw.ResponseWriter = wrap
 	flusher, _ := wrap.(http.Flusher)
 	pusher, _ := wrap.(http.Pusher)
 
 	if flusher == nil && pusher == nil {
-		return with
+		return rw
 	}
 
 	if flusher == nil && pusher != nil {
 		return struct {
 			http.ResponseWriter
 			http.Pusher
-		}{with, pusher}
+		}{rw, pusher}
 	}
 
 	if flusher != nil && pusher == nil {
 		return struct {
 			http.ResponseWriter
 			http.Flusher
-		}{with, flusher}
+		}{rw, flusher}
 	}
 
 	return struct {
 		http.ResponseWriter
 		http.Flusher
 		http.Pusher
-	}{with, flusher, pusher}
+	}{rw, flusher, pusher}
 }
