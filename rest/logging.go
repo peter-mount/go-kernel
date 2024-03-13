@@ -12,7 +12,7 @@ import (
 const (
 	// The log format:
 	// | Status | Method | Host | RemoteAddr | Path | ElapsedTime | X-Request-Id
-	log_format = "| %d | %s | %s | %v | %v | %.6fs | %s"
+	logFormat = "| %d | %s | %s | %v | %v | %.6fs | %s"
 )
 
 // ConsoleLogger returns a middleware function to log requests to the console
@@ -40,7 +40,7 @@ func FormatLogger(f FormatLoggerFunc) mux.MiddlewareFunc {
 			defer func() {
 				elapsed := time.Now().Sub(start).Seconds()
 
-				f(log_format, rw.GetStatus(), r.Method, r.Host, remoteAddr(r), r.URL, elapsed, w.Header().Get("X-Request-Id"))
+				f(logFormat, rw.GetStatus(), r.Method, r.Host, remoteAddr(r), r.URL, elapsed, w.Header().Get("X-Request-Id"))
 			}()
 
 			next.ServeHTTP(rw.Wrap(w), r)

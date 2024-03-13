@@ -1,8 +1,3 @@
-// A basic REST server supporting HTTP.
-//
-// This package implements a HTTP server using net/http and github.com/gorilla/mux
-// taking away most of the required boiler plate code usually needed when implementing
-// basic REST services. It also provides many utility methods for handling both JSON and XML responses.
 package rest
 
 import (
@@ -14,7 +9,7 @@ func (r *Rest) SetUnixDate(t int64) *Rest {
 	return r.SetDate("Date", t)
 }
 
-// SetUnixDate Sets Date header to a unix timestamp
+// SetDate Sets Date header to a unix timestamp
 func (r *Rest) SetDate(name string, t int64) *Rest {
 	var b []byte = appendTime(nil, time.Unix(t, int64(0)))
 	return r.AddHeader(name, string(b[:]))

@@ -5,13 +5,10 @@ import (
 	"net/http"
 )
 
-// A handler of a rest call
 type RestHandler func(*Rest) error
 
-// A decorator decorating a RestHandler
 type RestDecorator func(RestHandler) RestHandler
 
-// RestBuilder allows for a Rest endpoint to be built
 type RestBuilder struct {
 	server          *Server
 	commonDecorator []RestDecorator
@@ -28,7 +25,6 @@ type RestBuilder struct {
 	queries       []string
 }
 
-// Begin building rest endpoints on a server
 func (s *Server) RestBuilder() *RestBuilder {
 	return &RestBuilder{server: s}
 }
@@ -83,7 +79,7 @@ func (r *RestBuilder) applyOption(a []string, f func(...string) *mux.Route) {
 	}
 }
 
-// Reset() resets the builder so only the common entries are used in the next
+// Reset the builder so only the common entries are used in the next
 // Build(), e.g. Decorator()'s' and PathPrefix() are affected by this.
 //
 // Note, Build() call this so it's not normally required
@@ -142,7 +138,7 @@ func (r *RestBuilder) PathPrefix(pathPrefix string) *RestBuilder {
 	return r
 }
 
-// Pattern adds a path to the end point being built.
+// Path to be appended to the end point being built.
 // You can provide multiple patterns for the call being built
 func (r *RestBuilder) Path(s ...string) *RestBuilder {
 	r.paths = s
@@ -160,9 +156,9 @@ func (r *RestBuilder) Path(s ...string) *RestBuilder {
 // Headers adds a matcher for request header values.
 // It accepts a sequence of key/value pairs to be matched. For example:
 //
-//     r := server.RestBuilder()
-//     r.Headers("Content-Type", "application/json",
-//               "X-Requested-With", "XMLHttpRequest")
+//	r := server.RestBuilder()
+//	r.Headers("Content-Type", "application/json",
+//	          "X-Requested-With", "XMLHttpRequest")
 //
 // The above route will only match if both request header values match.
 // If the value is an empty string, it will match any value if the key is set.
@@ -174,9 +170,9 @@ func (r *RestBuilder) Headers(s ...string) *RestBuilder {
 // HeadersRegexp accepts a sequence of key/value pairs, where the value has regex
 // support. For example:
 //
-//     r := server.RestBuilder()
-//     r.HeadersRegexp("Content-Type", "application/(text|json)",
-//               "X-Requested-With", "XMLHttpRequest")
+//	r := server.RestBuilder()
+//	r.HeadersRegexp("Content-Type", "application/(text|json)",
+//	          "X-Requested-With", "XMLHttpRequest")
 //
 // The above route will only match if both the request header matches both regular expressions.
 // If the value is an empty string, it will match any value if the key is set.
@@ -196,8 +192,8 @@ func (r *RestBuilder) Method(s ...string) *RestBuilder {
 // It accepts a sequence of key/value pairs. Values may define variables.
 // For example:
 //
-//     r := server.RestBuilder()
-//     r.Queries("foo", "bar", "id", "{id:[0-9]+}")
+//	r := server.RestBuilder()
+//	r.Queries("foo", "bar", "id", "{id:[0-9]+}")
 //
 // The above route will only match if the URL contains the defined queries
 // values, e.g.: ?foo=bar&id=42.
@@ -243,11 +239,10 @@ func (r *RestBuilder) Authenticator(f RestDecorator) *RestBuilder {
 //
 // Here's an example on ensuring certain headers are always present:
 //
-//     Decorate( (&rest.AddHeadersDecorator{
-//       "Access-Control-Allow-Origin": "*",
-//       "X-Clacks-Overhead": "GNU Terry Pratchett",
-//     }).Decorator )
-//
+//	Decorate( (&rest.AddHeadersDecorator{
+//	  "Access-Control-Allow-Origin": "*",
+//	  "X-Clacks-Overhead": "GNU Terry Pratchett",
+//	}).Decorator )
 type AddHeadersDecorator map[string]string
 
 func (a *AddHeadersDecorator) Decorator(h RestHandler) RestHandler {

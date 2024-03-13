@@ -16,7 +16,7 @@ const (
 )
 
 var (
-	resposeUsed = errors.New("Response already written to")
+	responseUsed = errors.New("response already written to")
 )
 
 // Send returns data to the client.
@@ -24,7 +24,7 @@ var (
 // the response will be in XML, otherwise in JSON.
 func (r *Rest) Send() error {
 	if r.sent {
-		return resposeUsed
+		return responseUsed
 	}
 
 	r.sent = true

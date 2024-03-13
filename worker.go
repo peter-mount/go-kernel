@@ -9,7 +9,7 @@ import (
 
 type Worker struct {
 	daemon *Daemon `kernel:"inject"`
-	tasks  util.PriorityQueue
+	tasks  util.PriorityQueue[task.Task]
 }
 
 // AddTask adds a task with priority 0
@@ -62,8 +62,8 @@ func (w *Worker) run(ctx context.Context) error {
 	ctx = context.WithValue(ctx, ctxKey, w)
 
 	// Run each task in sequence until either an error or the queue is empty
-	return w.tasks.Drain(func(i interface{}) error {
-		return i.(task.Task).Do(ctx)
+	return w.tasks.Drain(func(t task.Task) error {
+		return t.Do(ctx)
 	})
 }
 

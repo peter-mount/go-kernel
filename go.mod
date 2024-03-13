@@ -1,6 +1,6 @@
 module github.com/peter-mount/go-kernel/v2
 
-go 1.17
+go 1.20
 
 require (
 	github.com/etcd-io/bbolt v1.3.3

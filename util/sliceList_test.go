@@ -3,7 +3,7 @@ package util
 import "testing"
 
 func TestSlice_IsEmpty(t *testing.T) {
-	list := NewList()
+	list := NewList[int]()
 
 	if !list.IsEmpty() {
 		t.Errorf("List not empty")
@@ -23,7 +23,7 @@ func TestSlice_IsEmpty(t *testing.T) {
 }
 
 func TestSlice_Remove(t *testing.T) {
-	list := NewList()
+	list := NewList[int]()
 
 	v1 := 1
 	v2 := 2

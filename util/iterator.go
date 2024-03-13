@@ -2,43 +2,43 @@ package util
 
 import "errors"
 
-type Iterable interface {
+type Iterable[T any] interface {
 	// ForEach calls a function for each entry in the collection.
 	// WARNING: For synchronized sets the function is called from inside the lock so the set cannot be modified for the
 	// duration of this call. See ForEachAsync
-	ForEach(f func(interface{}))
+	ForEach(f func(T))
 	// ForEachAsync calls a function for each entry in the collection.
 	// WARNING: This can be expensive as it calls Slice() first to get a copy of the set before iterating over the
 	// entries. However, it does mean the set can be modified during the call.
-	ForEachAsync(f func(interface{}))
+	ForEachAsync(f func(T))
 	// ForEachFailFast calls a function for each entry in the collection.
 	// WARNING: For synchronized sets the function is called from inside the lock so the set cannot be modified for the
 	// duration of this call. See ForEachAsync
-	ForEachFailFast(f func(interface{}) error) error
-	Iterator() Iterator
-	ReverseIterator() Iterator
+	ForEachFailFast(f func(T) error) error
+	Iterator() Iterator[T]
+	ReverseIterator() Iterator[T]
 }
 
-type Iterator interface {
-	Iterable
+type Iterator[T any] interface {
+	Iterable[T]
 	HasNext() bool
-	Next() interface{}
+	Next() T
 }
 
-type sliceIterator struct {
-	slice []interface{}
+type sliceIterator[T any] struct {
+	slice []T
 	pos   int
 }
 
-func NewIterator(v ...interface{}) Iterator {
-	return &sliceIterator{slice: v}
+func NewIterator[T any](v ...T) Iterator[T] {
+	return &sliceIterator[T]{slice: v}
 }
 
-func (i *sliceIterator) HasNext() bool {
+func (i *sliceIterator[T]) HasNext() bool {
 	return i.pos < len(i.slice)
 }
 
-func (i *sliceIterator) Next() interface{} {
+func (i *sliceIterator[T]) Next() T {
 	if i.HasNext() {
 		v := i.slice[i.pos]
 		i.pos++
@@ -47,17 +47,17 @@ func (i *sliceIterator) Next() interface{} {
 	panic(errors.New("iterator out of bounds"))
 }
 
-func (i *sliceIterator) ForEach(f func(interface{})) {
+func (i *sliceIterator[T]) ForEach(f func(T)) {
 	for _, v := range i.slice {
 		f(v)
 	}
 }
 
-func (i *sliceIterator) ForEachAsync(f func(interface{})) {
+func (i *sliceIterator[T]) ForEachAsync(f func(T)) {
 	i.ForEach(f)
 }
 
-func (i *sliceIterator) ForEachFailFast(f func(interface{}) error) error {
+func (i *sliceIterator[T]) ForEachFailFast(f func(T) error) error {
 	for _, v := range i.slice {
 		err := f(v)
 		if err != nil {
@@ -67,12 +67,12 @@ func (i *sliceIterator) ForEachFailFast(f func(interface{}) error) error {
 	return nil
 }
 
-func (i *sliceIterator) Iterator() Iterator {
+func (i *sliceIterator[T]) Iterator() Iterator[T] {
 	// Just return ourselves
 	return i
 }
 
-func (i *sliceIterator) ReverseIterator() Iterator {
+func (i *sliceIterator[T]) ReverseIterator() Iterator[T] {
 	// Just return ourselves
 	return i
 }

@@ -11,12 +11,12 @@ import (
 //
 // To use simply include it as the first service when launching the kernel:
 //
-// func main() {
-//   err := kernel.Launch( &kernel.MemUsage{}, &mylib.MyService{} )
-//   if err != nil {
-//     log.Fatal( err )
-//   }
-// }
+//	func main() {
+//	  err := kernel.Launch( &kernel.MemUsage{}, &mylib.MyService{} )
+//	  if err != nil {
+//	    log.Fatal( err )
+//	  }
+//	}
 //
 // When the service stops then some statistics are logged showing how long the
 // process has run, how much memory it's used and how often the garbage
@@ -27,19 +27,18 @@ import (
 // The process duration time is from when the Start phase begins.
 // If the kernel fails before that then no stats are generated. This is because
 // services only get stopped if they have started.
-//
 type MemUsage struct {
 	start time.Time
 }
 
-// Starts the service.
+// Start the service.
 // The process duration time reported is from when this is called.
 func (m *MemUsage) Start() error {
 	m.start = time.Now()
 	return nil
 }
 
-// Stops the service
+// Stop the service
 func (m *MemUsage) Stop() {
 	t := time.Now()
 	elapsed := t.Sub(m.start)

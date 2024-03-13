@@ -7,7 +7,7 @@ import (
 	"io"
 )
 
-// BodyReader() returns Request().Body unless the Content-Encoding header is set
+// BodyReader returns Request().Body unless the Content-Encoding header is set
 // to gzip in which case the body is decompressed before calling the reader
 func (r *Rest) BodyReader() (io.ReadCloser, error) {
 	reader := r.request.Body

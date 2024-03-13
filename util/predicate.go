@@ -1,3 +1,3 @@
 package util
 
-type Predicate func(interface{}) bool
+type Predicate[T any] func(T) bool

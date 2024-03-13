@@ -3,48 +3,48 @@ package util
 import "sync"
 
 // SyncMap is a synchronized map with accessors similar to the Java Map interface
-type syncMap struct {
+type syncMap[V comparable] struct {
 	mutex sync.Mutex
-	m     map[string]interface{}
+	m     map[string]V
 }
 
 // NewSyncMap creates a new Synchronous Map
-func NewSyncMap() Map {
-	m := &syncMap{}
+func NewSyncMap[V comparable]() Map[V] {
+	m := &syncMap[V]{}
 	m.Clear()
 	return m
 }
 
-func (m *syncMap) Clear() {
+func (m *syncMap[V]) Clear() {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
-	m.m = make(map[string]interface{})
+	m.m = make(map[string]V)
 }
 
-func (m *syncMap) Size() int {
+func (m *syncMap[V]) Size() int {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 	return len(m.m)
 }
 
-func (m *syncMap) IsEmpty() bool {
+func (m *syncMap[V]) IsEmpty() bool {
 	return m.Size() == 0
 }
 
-func (m *syncMap) Get(k string) interface{} {
+func (m *syncMap[V]) Get(k string) V {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 	return m.m[k]
 }
 
-func (m *syncMap) Get2(k string) (interface{}, bool) {
+func (m *syncMap[V]) Get2(k string) (V, bool) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 	v, e := m.m[k]
 	return v, e
 }
 
-func (m *syncMap) Put(k string, v interface{}) interface{} {
+func (m *syncMap[V]) Put(k string, v V) V {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 	old := m.m[k]
@@ -52,7 +52,7 @@ func (m *syncMap) Put(k string, v interface{}) interface{} {
 	return old
 }
 
-func (m *syncMap) PutIfAbsent(k string, v interface{}) interface{} {
+func (m *syncMap[V]) PutIfAbsent(k string, v V) V {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
@@ -62,9 +62,11 @@ func (m *syncMap) PutIfAbsent(k string, v interface{}) interface{} {
 	}
 
 	m.m[k] = v
-	return nil
+
+	var nilResponse V
+	return nilResponse
 }
-func (m *syncMap) Remove(k string) interface{} {
+func (m *syncMap[V]) Remove(k string) V {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
@@ -74,10 +76,11 @@ func (m *syncMap) Remove(k string) interface{} {
 		return old
 	}
 
-	return nil
+	var nilResponse V
+	return nilResponse
 }
 
-func (m *syncMap) RemoveIfEquals(k string, v interface{}) bool {
+func (m *syncMap[V]) RemoveIfEquals(k string, v V) bool {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
@@ -90,7 +93,7 @@ func (m *syncMap) RemoveIfEquals(k string, v interface{}) bool {
 	return false
 }
 
-func (m *syncMap) ReplaceIfEquals(k string, oldValue interface{}, newValue interface{}) bool {
+func (m *syncMap[V]) ReplaceIfEquals(k string, oldValue V, newValue V) bool {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
@@ -103,7 +106,7 @@ func (m *syncMap) ReplaceIfEquals(k string, oldValue interface{}, newValue inter
 	return false
 }
 
-func (m *syncMap) Replace(k string, v interface{}) bool {
+func (m *syncMap[V]) Replace(k string, v V) bool {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
@@ -116,14 +119,14 @@ func (m *syncMap) Replace(k string, v interface{}) bool {
 	return false
 }
 
-func (m *syncMap) ContainsKey(k string) bool {
+func (m *syncMap[V]) ContainsKey(k string) bool {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 	_, exists := m.m[k]
 	return exists
 }
 
-func (m *syncMap) ComputeIfAbsent(k string, f func(string) interface{}) interface{} {
+func (m *syncMap[V]) ComputeIfAbsent(k string, f func(string) V) V {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
@@ -136,7 +139,7 @@ func (m *syncMap) ComputeIfAbsent(k string, f func(string) interface{}) interfac
 	return v
 }
 
-func (m *syncMap) ComputeIfPresent(k string, f func(string, interface{}) interface{}) interface{} {
+func (m *syncMap[V]) ComputeIfPresent(k string, f func(string, V) V) V {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
@@ -149,7 +152,7 @@ func (m *syncMap) ComputeIfPresent(k string, f func(string, interface{}) interfa
 	return v
 }
 
-func (m *syncMap) Compute(k string, f func(string, interface{}) interface{}) interface{} {
+func (m *syncMap[V]) Compute(k string, f func(string, V) V) V {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
@@ -159,13 +162,13 @@ func (m *syncMap) Compute(k string, f func(string, interface{}) interface{}) int
 	return v
 }
 
-func (m *syncMap) Merge(k string, v interface{}, f func(interface{}, interface{}) interface{}) interface{} {
+func (m *syncMap[V]) Merge(k string, v V, f func(V, V) V) V {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 
 	ev, exists := m.m[k]
 
-	if !exists || ev == nil {
+	if !exists {
 		ev = v
 	} else {
 		ev = f(ev, v)
@@ -175,14 +178,14 @@ func (m *syncMap) Merge(k string, v interface{}, f func(interface{}, interface{}
 	return ev
 }
 
-func (m *syncMap) ExecIfPresent(k string, f func(interface{})) {
+func (m *syncMap[V]) ExecIfPresent(k string, f func(V)) {
 	v, e := m.Get2(k)
 	if e {
 		f(v)
 	}
 }
 
-func (m *syncMap) ForEach(f func(string, interface{})) {
+func (m *syncMap[V]) ForEach(f func(string, V)) {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 	for k, v := range m.m {
@@ -190,7 +193,7 @@ func (m *syncMap) ForEach(f func(string, interface{})) {
 	}
 }
 
-func (m *syncMap) Keys() []string {
+func (m *syncMap[V]) Keys() []string {
 	m.mutex.Lock()
 	defer m.mutex.Unlock()
 	var a []string
@@ -200,7 +203,7 @@ func (m *syncMap) Keys() []string {
 	return a
 }
 
-func (m *syncMap) ForEachAsync(f func(string, interface{})) {
+func (m *syncMap[V]) ForEachAsync(f func(string, V)) {
 	for _, k := range m.Keys() {
 		if v, e := m.Get2(k); e {
 			f(k, v)

@@ -75,15 +75,15 @@ type RunnableService interface {
 
 // Kernel is the core container for deployed services
 type Kernel struct {
-	services     util.List          // The deployed services
-	stopList     util.List          // The services that are running & need to be shut down
-	dependencies util.Set           // Used to prevent circular dependencies
+	services     util.List[Service] // The deployed services
+	stopList     util.List[Service] // The services that are running & need to be shut down
+	dependencies util.Set[Service]  // Used to prevent circular dependencies
 	index        map[string]Service // Map of services by name
 	readOnly     bool               // mark the kernel as read only
 }
 
 // Launch is a convenience method to launch a single service.
-// This does the boiler plate work and requires the single service adds any
+// This does the boilerplate work and requires the single service adds any
 // injectionPoints within it's Init() method, if any
 func Launch(services ...Service) error {
 
@@ -217,7 +217,7 @@ func (k *Kernel) addService(name string, s Service, api bool) (Service, error) {
 }
 
 func (k *Kernel) postInit() error {
-	return instance.services.ForEachFailFast(func(s interface{}) error {
+	return instance.services.ForEachFailFast(func(s Service) error {
 		if pi, ok := s.(PostInitialisableService); ok {
 			if err := pi.PostInit(); err != nil {
 				return err
@@ -228,7 +228,7 @@ func (k *Kernel) postInit() error {
 }
 
 func (k *Kernel) start() error {
-	return instance.services.ForEachFailFast(func(s interface{}) error {
+	return instance.services.ForEachFailFast(func(s Service) error {
 		// Start the service
 		if ss, ok := s.(StartableService); ok {
 			if err := (ss).Start(); err != nil {
@@ -245,13 +245,13 @@ func (k *Kernel) start() error {
 }
 
 func (k *Kernel) stop() {
-	instance.stopList.ReverseIterator().ForEach(func(i interface{}) {
+	instance.stopList.ReverseIterator().ForEach(func(i Service) {
 		(i).(StoppableService).Stop()
 	})
 }
 
 func (k *Kernel) run() error {
-	return instance.services.ForEachFailFast(func(s interface{}) error {
+	return instance.services.ForEachFailFast(func(s Service) error {
 		if rs, ok := s.(RunnableService); ok {
 			if err := rs.Run(); err != nil {
 				return err

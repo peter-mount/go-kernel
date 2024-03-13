@@ -1,8 +1,3 @@
-// Package rest A basic REST server supporting HTTP.
-//
-// This package implements a HTTP server using net/http and github.com/gorilla/mux
-// taking away most of the required boiler plate code usually needed when implementing
-// basic REST services. It also provides many utility methods for handling both JSON and XML responses.
 package rest
 
 import (

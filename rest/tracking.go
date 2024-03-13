@@ -8,7 +8,6 @@ import (
 	"net/http"
 )
 
-// An ID Generator
 type IdGenerator func() (string, error)
 
 // RequestID adds request tracing by adding the "X-Request-Id" header to the response
@@ -48,7 +47,7 @@ func TraceRequest(header string, nextRequestID IdGenerator) mux.MiddlewareFunc {
 	}
 }
 
-// Default ID generator, Generates a UUID
+// DefaultIDGenerator generates a UUID
 func DefaultIDGenerator() (string, error) {
 	id, err := uuid.NewV4()
 	if err != nil {

@@ -3,7 +3,7 @@ package util
 import "testing"
 
 func TestSyncSet_Add(t *testing.T) {
-	s := NewSyncSet()
+	s := NewSyncSet[string]()
 
 	val := "testValue"
 
@@ -25,7 +25,7 @@ func TestSyncSet_Add(t *testing.T) {
 }
 
 func TestSyncSet_Remove(t *testing.T) {
-	s := NewSyncSet()
+	s := NewSyncSet[string]()
 
 	val := "testValue"
 
