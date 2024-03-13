@@ -6,9 +6,12 @@ type hashSet[T comparable] struct {
 }
 
 // NewHashSet creates a new Set. This set is not synchronised
-func NewHashSet[T comparable]() Set[T] {
+func NewHashSet[T comparable](v ...T) Set[T] {
 	s := &hashSet[T]{}
 	s.Clear()
+	if len(v) > 0 {
+		s.AddAll(v...)
+	}
 	return s
 }
 
