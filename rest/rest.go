@@ -79,24 +79,23 @@ func (r *Rest) Value(value interface{}) *Rest {
 	return r
 }
 
-// Value sets the response value
+// Reader sets the Reader the response will be read from
 func (r *Rest) Reader(rdr io.Reader) *Rest {
 	r.reader = rdr
 	return r
 }
 
-// Writer returns a io.Writer to write the response
+// Writer returns an io.Writer to write the response
 func (r *Rest) Writer() io.Writer {
 	// Clear any values
 	r.value = nil
 	r.reader = nil
-	// Force a send so headers are sent
+	// Force send so headers are sent
 	r.Send()
 	// Return the underlying writer
 	return r.writer
 }
 
-// Value sets the response value
 func (r *Rest) ContentType(c string) *Rest {
 	r.contentType = c
 	return r

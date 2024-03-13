@@ -1,4 +1,4 @@
-// A simple kernel service wich provides access to a single github.com/etcd-io/bbolt
+// Package bolt A simple kernel service wich provides access to a single github.com/etcd-io/bbolt
 // object store
 package bolt
 
@@ -21,7 +21,7 @@ func (s *BoltService) Name() string {
 	return "bolt:" + s.FileName
 }
 
-func (s *BoltService) Init(k *kernel.Kernel) error {
+func (s *BoltService) Init(_ *kernel.Kernel) error {
 	if s.FileName == "" {
 		s.dbFile = flag.String("bucket-store", "", "The file to store all buckets")
 	}

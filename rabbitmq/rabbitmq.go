@@ -1,7 +1,6 @@
-// A simple amqp library for connecting to RabbitMQ
+// Package rabbitmq implements a simple amqp library for connecting to RabbitMQ
 //
-// This is a wrapper around the github.com/streadway/amqp library.
-//
+// This is a wrapper around the github.com/rabbitmq/amqp091-go library (formerly github.com/streadway/amqp)
 package rabbitmq
 
 import (
