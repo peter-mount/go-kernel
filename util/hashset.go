@@ -1,26 +1,26 @@
 package util
 
 // hashSet is an un-synchronized set with accessors similar to the Java Set interface
-type hashSet struct {
-	m map[interface{}]interface{}
+type hashSet[T comparable] struct {
+	m map[T]interface{}
 }
 
 // NewHashSet creates a new Set. This set is not synchronised
-func NewHashSet() Set {
-	s := &hashSet{}
+func NewHashSet[T comparable]() Set[T] {
+	s := &hashSet[T]{}
 	s.Clear()
 	return s
 }
 
-func (m *hashSet) Size() int {
+func (m *hashSet[T]) Size() int {
 	return len(m.m)
 }
 
-func (m *hashSet) IsEmpty() bool {
+func (m *hashSet[T]) IsEmpty() bool {
 	return m.Size() == 0
 }
 
-func (m *hashSet) Add(v interface{}) bool {
+func (m *hashSet[T]) Add(v T) bool {
 	_, e := m.m[v]
 	if !e {
 		m.m[v] = nil
@@ -28,7 +28,7 @@ func (m *hashSet) Add(v interface{}) bool {
 	return !e
 }
 
-func (m *hashSet) AddAll(v ...interface{}) bool {
+func (m *hashSet[T]) AddAll(v ...T) bool {
 	var r bool
 	for _, e := range v {
 		r = m.Add(e) || r
@@ -36,11 +36,11 @@ func (m *hashSet) AddAll(v ...interface{}) bool {
 	return r
 }
 
-func (m *hashSet) Clear() {
-	m.m = make(map[interface{}]interface{})
+func (m *hashSet[T]) Clear() {
+	m.m = make(map[T]interface{})
 }
 
-func (m *hashSet) Remove(k interface{}) bool {
+func (m *hashSet[T]) Remove(k T) bool {
 	_, exists := m.m[k]
 	if exists {
 		delete(m.m, k)
@@ -50,26 +50,26 @@ func (m *hashSet) Remove(k interface{}) bool {
 	return false
 }
 
-func (m *hashSet) Contains(k interface{}) bool {
+func (m *hashSet[T]) Contains(k T) bool {
 	_, exists := m.m[k]
 	return exists
 }
 
-func (m *hashSet) Slice() []interface{} {
-	var a []interface{}
+func (m *hashSet[T]) Slice() []T {
+	var a []T
 	for k, _ := range m.m {
 		a = append(a, k)
 	}
 	return a
 }
 
-func (m *hashSet) ForEach(f func(interface{})) {
+func (m *hashSet[T]) ForEach(f func(T)) {
 	for k, _ := range m.m {
 		f(k)
 	}
 }
 
-func (m *hashSet) ForEachFailFast(f func(interface{}) error) error {
+func (m *hashSet[T]) ForEachFailFast(f func(T) error) error {
 	for k, _ := range m.m {
 		err := f(k)
 		if err != nil {
@@ -79,19 +79,19 @@ func (m *hashSet) ForEachFailFast(f func(interface{}) error) error {
 	return nil
 }
 
-func (m *hashSet) ForEachAsync(f func(interface{})) {
+func (m *hashSet[T]) ForEachAsync(f func(T)) {
 	for _, k := range m.Slice() {
 		f(k)
 	}
 }
 
-func (m *hashSet) Iterator() Iterator {
+func (m *hashSet[T]) Iterator() Iterator[T] {
 	a := m.Slice()
-	return NewIterator(a...)
+	return NewIterator[T](a...)
 }
 
-func (m *hashSet) ReverseIterator() Iterator {
+func (m *hashSet[T]) ReverseIterator() Iterator[T] {
 	a := m.Slice()
 	a = reverseSlice(a)
-	return NewIterator(a...)
+	return NewIterator[T](a...)
 }

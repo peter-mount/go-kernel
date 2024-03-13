@@ -2,15 +2,15 @@ package util
 
 import "github.com/peter-mount/go-kernel/v2/util/strings"
 
-type SortedMap map[string]interface{}
+type SortedMap[V any] map[string]V
 
-func NewSortedMap() *SortedMap {
-	m := make(SortedMap)
+func NewSortedMap[V any]() *SortedMap[V] {
+	m := make(SortedMap[V])
 	return &m
 }
 
 // AddAll will add all entries in the source map to this instance
-func (m *SortedMap) AddAll(source map[string]interface{}) *SortedMap {
+func (m *SortedMap[V]) AddAll(source map[string]V) *SortedMap[V] {
 	for k, v := range source {
 		(*m)[k] = v
 	}
@@ -18,28 +18,28 @@ func (m *SortedMap) AddAll(source map[string]interface{}) *SortedMap {
 }
 
 // DecodeMap will add all entries in the source map to this instance.
-func (m *SortedMap) DecodeMap(source map[interface{}]interface{}) *SortedMap {
+func (m *SortedMap[V]) DecodeMap(source map[interface{}]interface{}) *SortedMap[V] {
 	_ = m.decodeMap(source)
 	return m
 }
 
 // Decode will add all entries in the source to this instance if it's a map. If not it does nothing.
-func (m *SortedMap) Decode(source interface{}) *SortedMap {
+func (m *SortedMap[V]) Decode(source interface{}) *SortedMap[V] {
 	_ = IfMap(source, m.decodeMap)
 	return m
 }
 
-func (m *SortedMap) decodeMap(source map[interface{}]interface{}) error {
+func (m *SortedMap[V]) decodeMap(source map[interface{}]interface{}) error {
 	for k, v := range source {
 		ks := DecodeString(k, "")
 		if ks != "" {
-			(*m)[ks] = v
+			(*m)[ks] = v.(V)
 		}
 	}
 	return nil
 }
 
-func (m *SortedMap) Keys() strings.StringSlice {
+func (m *SortedMap[V]) Keys() strings.StringSlice {
 	var a strings.StringSlice
 	for k, _ := range *m {
 		a = append(a, k)
@@ -47,7 +47,7 @@ func (m *SortedMap) Keys() strings.StringSlice {
 	return a
 }
 
-func (m *SortedMap) ForEach(f func(string, interface{}) error) error {
+func (m *SortedMap[V]) ForEach(f func(string, V) error) error {
 	return m.Keys().
 		Sort().
 		ForEach(func(k string) error {

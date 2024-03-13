@@ -18,9 +18,9 @@ func init() {
 
 func resetKernel() {
 	instance = &Kernel{
-		dependencies: util.NewSyncSet(),
-		services:     util.NewList(),
-		stopList:     util.NewList(),
+		dependencies: util.NewSyncSet[Service](),
+		services:     util.NewList[Service](),
+		stopList:     util.NewList[Service](),
 		index:        make(map[string]Service),
 	}
 }
@@ -29,7 +29,6 @@ func resetKernel() {
 // If the kernel has been started then this will panic.
 //
 // This is normally used within a packages' init() function to automatically deploy services.
-//
 func Register(services ...Service) {
 	err := assertInstanceAmendable()
 	if err == nil {

@@ -3,7 +3,7 @@ package util
 import "testing"
 
 func TestPriorityQueue_Add(t *testing.T) {
-	var queue PriorityQueue
+	var queue PriorityQueue[int]
 
 	if !queue.IsEmpty() {
 		t.Errorf("PriorityQueue not empty on creation")
@@ -17,7 +17,7 @@ func TestPriorityQueue_Add(t *testing.T) {
 }
 
 func TestPriorityQueue_AddPriority(t *testing.T) {
-	var queue PriorityQueue
+	var queue PriorityQueue[int]
 
 	if !queue.IsEmpty() {
 		t.Errorf("PriorityQueue not empty on creation")
@@ -45,16 +45,11 @@ func TestPriorityQueue_AddPriority(t *testing.T) {
 			t.Errorf("PriorityQueue empty whilst expecting an entry")
 		}
 
-		if e, ok := val.(int); ok {
-			if e < v || e > (v+1) {
-				t.Errorf("PriorityQueue out of sequence, expected %d or %d, got %d",
-					v, v+1, e)
-			}
-			v = e
-		} else {
-			t.Errorf("PriorityQueue non-int returned, expected %d or %d, got %v",
-				v, v+1, e)
+		if val < v || val > (v+1) {
+			t.Errorf("PriorityQueue out of sequence, expected %d or %d, got %d",
+				v, v+1, val)
 		}
+		v = val
 	}
 
 }

@@ -16,7 +16,7 @@ const (
 )
 
 type defaultQueue struct {
-	tasks util.PriorityQueue
+	tasks util.PriorityQueue[Task]
 }
 
 func NewQueue() Queue {
@@ -53,8 +53,8 @@ func Run(queue Queue, ctx context.Context) error {
 		}
 
 		// Run each task in sequence until either an error or the queue is empty
-		return q.tasks.Drain(func(i interface{}) error {
-			return i.(Task).Do(ctx)
+		return q.tasks.Drain(func(t Task) error {
+			return t.Do(ctx)
 		})
 	}
 

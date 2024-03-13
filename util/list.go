@@ -1,22 +1,22 @@
 package util
 
-type List interface {
+type List[T any] interface {
 	Collection
-	Iterable
-	// Add an entry in the list
-	Add(interface{}) bool
-	// Add an entry at the specified position in the list
-	AddIndex(int, interface{})
+	Iterable[T]
+	// Add an entry to the list, usually on the end however this is up to the implementation.
+	Add(T) bool
+	// AddIndex adds an entry at the specified position in the list
+	AddIndex(int, T)
 	// Contains returns true if the set contains the value
-	Contains(interface{}) bool
+	Contains(T) bool
 	// Get returns the element at a specific index
-	Get(int) interface{}
+	Get(int) T
 	// IndexOf returns the index of the first occurrence of the specified element or -1 if not present.
-	IndexOf(interface{}) int
+	IndexOf(T) int
 	// Remove removes the supplied entry
-	Remove(interface{}) bool
+	Remove(T) bool
 	// RemoveIndex removes the entry at the specific index
 	RemoveIndex(i int) bool
 	// FindIndexOf returns the index of the first occurrence that matches the provided predicate
-	FindIndexOf(Predicate) int
+	FindIndexOf(Predicate[T]) int
 }
