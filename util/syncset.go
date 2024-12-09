@@ -1,6 +1,9 @@
 package util
 
-import "sync"
+import (
+	"slices"
+	"sync"
+)
 
 // syncSet is a synchronized set with accessors similar to the Java Set interface
 type syncSet[T comparable] struct {
@@ -116,6 +119,6 @@ func (m *syncSet[T]) Iterator() Iterator[T] {
 
 func (m *syncSet[T]) ReverseIterator() Iterator[T] {
 	a := m.Slice()
-	a = reverseSlice(a)
+	slices.Reverse(a)
 	return NewIterator(a...)
 }

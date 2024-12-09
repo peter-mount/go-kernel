@@ -1,6 +1,9 @@
 package util
 
-import "errors"
+import (
+	"errors"
+	"slices"
+)
 
 type Iterable[T any] interface {
 	// ForEach calls a function for each entry in the collection.
@@ -68,11 +71,12 @@ func (i *sliceIterator[T]) ForEachFailFast(f func(T) error) error {
 }
 
 func (i *sliceIterator[T]) Iterator() Iterator[T] {
-	// Just return ourselves
-	return i
+	s := slices.Clone(i.slice)
+	return NewIterator[T](s...)
 }
 
 func (i *sliceIterator[T]) ReverseIterator() Iterator[T] {
-	// Just return ourselves
-	return i
+	s := slices.Clone(i.slice)
+	slices.Reverse(s)
+	return NewIterator[T](s...)
 }

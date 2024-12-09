@@ -1,5 +1,7 @@
 package util
 
+import "slices"
+
 // hashSet is an un-synchronized set with accessors similar to the Java Set interface
 type hashSet[T comparable] struct {
 	m map[T]interface{}
@@ -95,6 +97,6 @@ func (m *hashSet[T]) Iterator() Iterator[T] {
 
 func (m *hashSet[T]) ReverseIterator() Iterator[T] {
 	a := m.Slice()
-	a = reverseSlice(a)
+	slices.Reverse(a)
 	return NewIterator[T](a...)
 }

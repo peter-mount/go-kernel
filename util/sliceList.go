@@ -2,6 +2,7 @@ package util
 
 import (
 	"errors"
+	"slices"
 )
 
 type sliceList[T comparable] struct {
@@ -137,29 +138,13 @@ func (s *sliceList[T]) RemoveIndex(i int) bool {
 	return true
 }
 
-func copySlice[T any](s []T) []T {
-	var a []T
-	if s != nil {
-		a = make([]T, len(s))
-		copy(a, s)
-	}
-	return a
-}
-
-func reverseSlice[T any](s []T) []T {
-	for i, j := 0, len(s)-1; i < j; i, j = i+1, j-1 {
-		s[i], s[j] = s[j], s[i]
-	}
-	return s
-}
-
 func (s *sliceList[T]) Iterator() Iterator[T] {
-	a := copySlice(s.data)
+	a := slices.Clone(s.data)
 	return NewIterator[T](a...)
 }
 
 func (s *sliceList[T]) ReverseIterator() Iterator[T] {
-	a := copySlice(s.data)
-	a = reverseSlice(a)
+	a := slices.Clone(s.data)
+	slices.Reverse(a)
 	return NewIterator[T](a...)
 }
