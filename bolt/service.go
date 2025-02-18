@@ -1,12 +1,12 @@
-// Package bolt A simple kernel service wich provides access to a single github.com/etcd-io/bbolt
+// Package bolt A simple kernel service wich provides access to a single go.etcd.io/bbolt
 // object store
 package bolt
 
 import (
 	"flag"
 	"fmt"
-	"github.com/etcd-io/bbolt"
 	"github.com/peter-mount/go-kernel/v2"
+	"go.etcd.io/bbolt"
 	"os"
 	"time"
 )
